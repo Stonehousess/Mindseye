@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindsEye Prototype</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<canvas id="bubbleCanvas"></canvas>
+
+<script>
+  const ideas = [
+    { title: "Pierette Les Furis", color: "#FF6B6B" },
+    { title: "Break Point", color: "#6BCB77" },
+    { title: "Lucky Days", color: "#4D96FF" },
+    { title: "Seare Madre", color: "#FFD93D" },
+    { title: "TV Nasty", color: "#A66DD4" },
+    { title: "How Not to have a sex change", color: "#FF922B" }
+  ];
+
+  const canvas = document.getElementById('bubbleCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  class Bubble {
+    constructor(x, y, dx, dy, title, color) {
+      this.x = x;
+      this.y = y;
+      this.dx = dx;
+      this.dy = dy;
+      this.radius = 80;
+      this.title = title;
+      this.color = color;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = this.color;
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(this.title, this.x, this.y + 5);
+    }
+
+    update(bubbles) {
+      this.x += this.dx;
+      this.y += this.dy;
+
+      // Wall collision
+      if (this.x + this.radius > canvas.width || this.x - this.radius < 0) this.dx *= -1;
+      if (this.y + this.radius > canvas.height || this.y - this.radius < 0) this.dy *= -1;
+
+      // Bubble-bubble collision
+      for (let other of bubbles) {
+        if (other !== this) {
+          let dx = other.x - this.x;
+          let dy = other.y - this.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < this.radius * 2) {
+            // Swap velocities
+            [this.dx, other.dx] = [other.dx, this.dx];
+            [this.dy, other.dy] = [other.dy, this.dy];
+          }
+        }
+      }
+
+      this.draw();
+    }
+  }
+
+  let bubbles = ideas.map(idea => {
+    let x = Math.random() * (canvas.width - 160) + 80;
+    let y = Math.random() * (canvas.height - 160) + 80;
+    let dx = (Math.random() - 0.5) * 1.5;
+    let dy = (Math.random() - 0.5) * 1.5;
+    return new Bubble(x, y, dx, dy, idea.title, idea.color);
+  });
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let b of bubbles) b.update(bubbles);
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+</script>
+</body>
+</html>
