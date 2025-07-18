@@ -2,109 +2,190 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MindsEye Prototype</title>
+  <title>MindsEye</title>
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      background: black;
+      background-color: black;
       overflow: hidden;
+      font-family: sans-serif;
     }
+
     canvas {
       display: block;
+    }
+
+    .idea-panel {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #111;
+      border: 2px solid #555;
+      border-radius: 20px;
+      padding: 20px;
+      width: 60%;
+      max-width: 600px;
+      color: white;
+      display: none;
+      z-index: 10;
+    }
+
+    .idea-panel h2 {
+      margin-top: 0;
+    }
+
+    .idea-panel textarea {
+      width: 100%;
+      height: 150px;
+      margin-top: 10px;
+      background: #222;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 8px;
+      resize: vertical;
+      padding: 8px;
+      font-family: inherit;
+    }
+
+    .idea-panel button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #333;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .idea-panel button:hover {
+      background-color: #555;
     }
   </style>
 </head>
 <body>
-<canvas id="bubbleCanvas"></canvas>
+<canvas id="canvas"></canvas>
+
+<div class="idea-panel" id="ideaPanel">
+  <h2 contenteditable="true" id="ideaTitle">Idea Title</h2>
+  <textarea id="ideaDescription">Idea description goes here...</textarea>
+  <button id="saveIdea">Save</button>
+</div>
 
 <script>
-  const ideas = [
-    { title: "Pierette Les Furis", color: "#FF6B6B" },
-    { title: "Break Point", color: "#6BCB77" },
-    { title: "Lucky Days", color: "#4D96FF" },
-    { title: "Seare Madre", color: "#FFD93D" },
-    { title: "TV Nasty", color: "#A66DD4" },
-    { title: "How Not to have a sex change", color: "#FF922B" }
-  ];
-
-  const canvas = document.getElementById('bubbleCanvas');
-  const ctx = canvas.getContext('2d');
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  });
+  const ideaPanel = document.getElementById("ideaPanel");
+  const ideaTitle = document.getElementById("ideaTitle");
+  const ideaDescription = document.getElementById("ideaDescription");
+  const saveButton = document.getElementById("saveIdea");
 
-  class Bubble {
-    constructor(x, y, dx, dy, title, color) {
-      this.x = x;
-      this.y = y;
-      this.dx = dx;
-      this.dy = dy;
-      this.radius = 80;
-      this.title = title;
-      this.color = color;
-    }
+  let selectedBubble = null;
+  let isPaused = false;
 
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = this.color;
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = this.color;
-      ctx.fill();
+  const ideas = [
+    { x: 100, y: 100, vx: 1, vy: 1.5, radius: 60, title: "Pierette Les Furis", description: "French noir action drama." },
+    { x: 300, y: 200, vx: -1.2, vy: 1, radius: 60, title: "Break Point", description: "Extreme sports trans rebellion." },
+    { x: 500, y: 150, vx: 1.3, vy: -1, radius: 60, title: "Lucky Days", description: "Virtual DJ AI meets rebellion." },
+    { x: 200, y: 400, vx: -0.8, vy: 1.4, radius: 60, title: "Seare Madre", description: "Modern Treasure of the Sierra Madre." },
+    { x: 600, y: 350, vx: 0.9, vy: -1.3, radius: 60, title: "TV Nasty", description: "Found footage + trans horror." },
+    { x: 400, y: 500, vx: -1, vy: -0.8, radius: 60, title: "How Not to Have a Sex Change", description: "Satirical documentary of real trauma." }
+  ];
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(this.title, this.x, this.y + 5);
-    }
+  function drawBubble(idea, color) {
+    ctx.beginPath();
+    ctx.arc(idea.x, idea.y, idea.radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = color;
+    ctx.fill();
+    ctx.closePath();
 
-    update(bubbles) {
-      this.x += this.dx;
-      this.y += this.dy;
-
-      // Wall collision
-      if (this.x + this.radius > canvas.width || this.x - this.radius < 0) this.dx *= -1;
-      if (this.y + this.radius > canvas.height || this.y - this.radius < 0) this.dy *= -1;
-
-      // Bubble-bubble collision
-      for (let other of bubbles) {
-        if (other !== this) {
-          let dx = other.x - this.x;
-          let dy = other.y - this.y;
-          let dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < this.radius * 2) {
-            // Swap velocities
-            [this.dx, other.dx] = [other.dx, this.dx];
-            [this.dy, other.dy] = [other.dy, this.dy];
-          }
-        }
-      }
-
-      this.draw();
-    }
+    ctx.fillStyle = "white";
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(idea.title, idea.x, idea.y + 5);
   }
 
-  let bubbles = ideas.map(idea => {
-    let x = Math.random() * (canvas.width - 160) + 80;
-    let y = Math.random() * (canvas.height - 160) + 80;
-    let dx = (Math.random() - 0.5) * 1.5;
-    let dy = (Math.random() - 0.5) * 1.5;
-    return new Bubble(x, y, dx, dy, idea.title, idea.color);
-  });
-
   function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let b of bubbles) b.update(bubbles);
+    if (!isPaused) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < ideas.length; i++) {
+        const idea = ideas[i];
+
+        idea.x += idea.vx;
+        idea.y += idea.vy;
+
+        if (idea.x + idea.radius > canvas.width || idea.x - idea.radius < 0) {
+          idea.vx *= -1;
+        }
+        if (idea.y + idea.radius > canvas.height || idea.y - idea.radius < 0) {
+          idea.vy *= -1;
+        }
+
+        for (let j = i + 1; j < ideas.length; j++) {
+          const dx = idea.x - ideas[j].x;
+          const dy = idea.y - ideas[j].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < idea.radius + ideas[j].radius) {
+            let temp = idea.vx;
+            idea.vx = ideas[j].vx;
+            ideas[j].vx = temp;
+            temp = idea.vy;
+            idea.vy = ideas[j].vy;
+            ideas[j].vy = temp;
+          }
+        }
+
+        drawBubble(idea, i === selectedBubble ? "#00ffff" : `hsl(${i * 60}, 100%, 50%)`);
+      }
+    }
     requestAnimationFrame(animate);
   }
 
   animate();
+
+  canvas.addEventListener("click", function (e) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    selectedBubble = null;
+    for (let i = 0; i < ideas.length; i++) {
+      const idea = ideas[i];
+      const dx = mouseX - idea.x;
+      const dy = mouseY - idea.y;
+      if (Math.sqrt(dx * dx + dy * dy) < idea.radius) {
+        selectedBubble = i;
+        isPaused = true;
+        ideaTitle.innerText = idea.title;
+        ideaDescription.value = idea.description;
+        ideaPanel.style.display = "block";
+        return;
+      }
+    }
+
+    // Clicked outside any bubble
+    ideaPanel.style.display = "none";
+    isPaused = false;
+  });
+
+  saveButton.addEventListener("click", function () {
+    if (selectedBubble !== null) {
+      ideas[selectedBubble].title = ideaTitle.innerText;
+      ideas[selectedBubble].description = ideaDescription.value;
+    }
+    ideaPanel.style.display = "none";
+    isPaused = false;
+  });
+
+  window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
 </script>
 </body>
 </html>
