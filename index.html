@@ -100,8 +100,8 @@
         title,
         description,
         x, y,
-        vx: Math.random() * 2 - 1,
-        vy: Math.random() * 2 - 1,
+        vx: (Math.random() * 2 - 1) * 1.5,
+        vy: (Math.random() * 2 - 1) * 1.5,
         color
       });
     }
@@ -156,14 +156,12 @@
         if (a.x - radius < 0 || a.x + radius > width) a.vx *= -1;
         if (a.y - radius < 50 || a.y + radius > height) a.vy *= -1;
 
-        // Bounce off each other
         for (let j = i + 1; j < ideas.length; j++) {
           let b = ideas[j];
           let dx = a.x - b.x;
           let dy = a.y - b.y;
           let dist = Math.sqrt(dx*dx + dy*dy);
           if (dist < radius * 2) {
-            // Simple elastic collision
             let angle = Math.atan2(dy, dx);
             let tx = a.x - Math.cos(angle) * radius * 2;
             let ty = a.y - Math.sin(angle) * radius * 2;
@@ -174,14 +172,25 @@
           }
         }
 
+        const gradient = ctx.createRadialGradient(a.x, a.y, radius * 0.6, a.x, a.y, radius);
+        gradient.addColorStop(0, a.color);
+        gradient.addColorStop(1, "white");
+
         ctx.beginPath();
         ctx.arc(a.x, a.y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = a.color;
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = a.color;
         ctx.fill();
-        ctx.fillStyle = "black";
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = "white";
         ctx.font = "bold 14px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(a.title, a.x, a.y);
+        const words = a.title.split(" ");
+        words.forEach((word, idx) => {
+          ctx.fillText(word, a.x, a.y + idx * 16 - (words.length - 1) * 8);
+        });
       }
       requestAnimationFrame(draw);
     }
@@ -208,7 +217,6 @@
       reader.readAsText(file);
     });
 
-    // Initial ideas
     addIdea(200, 200, "TV Nasty", "My most ambitious concept");
     addIdea(500, 300, "Lucky Days", "Avatar morning show");
     addIdea(300, 500, "Break Point", "Extreme sports transition tale");
