@@ -2,185 +2,219 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mindseye Bubble Ideas</title>
+  <title>MindsEye</title>
   <style>
-    body {
+    html, body {
       margin: 0;
-      background-color: black;
+      padding: 0;
       overflow: hidden;
+      background-color: black;
       font-family: sans-serif;
     }
-    canvas {
+    #toolbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: #111;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 1000;
+    }
+    #canvas {
       display: block;
     }
-    #editor {
-      position: absolute;
-      top: 50%;
+    .panel {
+      position: fixed;
+      top: 80px;
       left: 50%;
-      transform: translate(-50%, -50%);
-      background: #222;
-      border-radius: 20px;
-      padding: 20px;
-      color: white;
-      display: none;
+      transform: translateX(-50%);
       width: 400px;
-      max-width: 90%;
+      background: #222;
+      color: white;
+      padding: 20px;
+      border-radius: 16px;
+      z-index: 999;
+      display: none;
     }
-    #editor input, #editor textarea {
+    .panel input, .panel textarea {
       width: 100%;
-      margin-bottom: 10px;
-      padding: 5px;
+      margin: 5px 0;
       background: #333;
-      color: white;
       border: none;
-      border-radius: 5px;
+      color: white;
+      padding: 5px;
     }
-    #editor button {
+    .panel button {
       margin-right: 10px;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 5px;
-      background: #555;
+      padding: 6px 12px;
+      background: #444;
       color: white;
+      border: none;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
-<div id="editor">
-  <input id="title" placeholder="Title" />
-  <textarea id="description" placeholder="Description"></textarea>
-  <button onclick="saveEdit()">Save</button>
-  <button onclick="randomColor()">Change Color</button>
-  <button onclick="closeEditor()">Close</button>
-</div>
-<script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+  <div id="toolbar">
+    <div><strong>MindsEye</strong></div>
+    <div>
+      <button onclick="saveIdeas()">Save Ideas</button>
+      <input type="file" id="fileLoader" accept=".json" style="display:none" />
+      <button onclick="document.getElementById('fileLoader').click()">Load Ideas</button>
+    </div>
+  </div>
+  <canvas id="canvas"></canvas>
+  <div class="panel" id="panel">
+    <input id="title" placeholder="Title" />
+    <textarea id="description" rows="5" placeholder="Description"></textarea>
+    <div>
+      <button onclick="savePanel()">Save</button>
+      <button onclick="changeColor()">Change Color</button>
+      <button onclick="closePanel()">Close</button>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const panel = document.getElementById("panel");
+    let width, height;
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
 
-window.addEventListener("resize", () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
+    const radius = 80;
+    let ideas = [];
+    let selectedIdea = null;
 
-let ideas = [
-  { title: "Pierette Les Furis", description: "A poetic vision of rebellion.", x: 100, y: 100, dx: 1, dy: 1, radius: 80, color: "red" },
-  { title: "Break Point", description: "Trans women in extreme sports.", x: 300, y: 200, dx: -1, dy: 1.2, radius: 80, color: "blue" },
-  { title: "Lucky Days", description: "AI avatar journeys.", x: 500, y: 300, dx: 1.5, dy: -1, radius: 80, color: "green" },
-  { title: "Seare Madre", description: "Modern treasure hunters.", x: 200, y: 400, dx: -1.2, dy: -1.5, radius: 80, color: "orange" },
-  { title: "TV Nasty", description: "Horror, media, identity.", x: 600, y: 150, dx: 1.3, dy: 1.3, radius: 80, color: "purple" },
-  { title: "How Not to have a sex change", description: "A darkly comic journey.", x: 700, y: 350, dx: -1, dy: 1.6, radius: 80, color: "yellow" },
-];
+    function randomColor() {
+      return `hsl(${Math.random()*360}, 100%, 70%)`;
+    }
 
-let selected = null;
-const editor = document.getElementById("editor");
-const titleInput = document.getElementById("title");
-const descInput = document.getElementById("description");
+    function addIdea(x, y, title = "New Idea", description = "", color = randomColor()) {
+      ideas.push({
+        title,
+        description,
+        x, y,
+        vx: Math.random() * 2 - 1,
+        vy: Math.random() * 2 - 1,
+        color
+      });
+    }
 
-function drawBubbles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < ideas.length; i++) {
-    let a = ideas[i];
-    // Bounce off each other
-    for (let j = i + 1; j < ideas.length; j++) {
-      let b = ideas[j];
-      let dx = b.x - a.x;
-      let dy = b.y - a.y;
-      let dist = Math.sqrt(dx * dx + dy * dy);
-      let minDist = a.radius + b.radius;
-      if (dist < minDist) {
-        let angle = Math.atan2(dy, dx);
-        let targetX = a.x + Math.cos(angle) * minDist;
-        let targetY = a.y + Math.sin(angle) * minDist;
-        let ax = (targetX - b.x) * 0.05;
-        let ay = (targetY - b.y) * 0.05;
-        a.dx -= ax;
-        a.dy -= ay;
-        b.dx += ax;
-        b.dy += ay;
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      let clicked = false;
+      for (let idea of ideas) {
+        const dx = x - idea.x;
+        const dy = y - idea.y;
+        if (Math.sqrt(dx * dx + dy * dy) < radius) {
+          selectedIdea = idea;
+          showPanel();
+          clicked = true;
+          break;
+        }
       }
+      if (!clicked) {
+        addIdea(x, y);
+      }
+    });
+
+    function showPanel() {
+      document.getElementById("title").value = selectedIdea.title;
+      document.getElementById("description").value = selectedIdea.description;
+      panel.style.display = "block";
     }
-    a.x += a.dx;
-    a.y += a.dy;
-    if (a.x < a.radius || a.x > canvas.width - a.radius) a.dx *= -1;
-    if (a.y < a.radius || a.y > canvas.height - a.radius) a.dy *= -1;
-    ctx.beginPath();
-    ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
-    ctx.fillStyle = a.color;
-    ctx.shadowColor = a.color;
-    ctx.shadowBlur = 15;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "white";
-    ctx.font = "bold 14px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(a.title, a.x, a.y + 4);
-  }
-}
 
-canvas.addEventListener("click", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-  for (let i = 0; i < ideas.length; i++) {
-    let a = ideas[i];
-    let dx = mouseX - a.x;
-    let dy = mouseY - a.y;
-    if (Math.sqrt(dx * dx + dy * dy) < a.radius) {
-      selected = a;
-      titleInput.value = a.title;
-      descInput.value = a.description;
-      editor.style.display = "block";
-      return;
+    function savePanel() {
+      selectedIdea.title = document.getElementById("title").value;
+      selectedIdea.description = document.getElementById("description").value;
+      panel.style.display = "none";
     }
-  }
-  // If no bubble selected, create new one
-  let color = `hsl(${Math.random() * 360}, 100%, 60%)`;
-  let newBubble = {
-    title: "New Idea",
-    description: "",
-    x: mouseX,
-    y: mouseY,
-    dx: Math.random() * 2 - 1,
-    dy: Math.random() * 2 - 1,
-    radius: 80,
-    color: color,
-  };
-  ideas.push(newBubble);
-  selected = newBubble;
-  titleInput.value = newBubble.title;
-  descInput.value = newBubble.description;
-  editor.style.display = "block";
-});
 
-function saveEdit() {
-  if (selected) {
-    selected.title = titleInput.value;
-    selected.description = descInput.value;
-  }
-  editor.style.display = "none";
-}
+    function closePanel() {
+      panel.style.display = "none";
+    }
 
-function closeEditor() {
-  editor.style.display = "none";
-}
+    function changeColor() {
+      selectedIdea.color = randomColor();
+    }
 
-function randomColor() {
-  if (selected) {
-    selected.color = `hsl(${Math.random() * 360}, 100%, 60%)`;
-  }
-}
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < ideas.length; i++) {
+        let a = ideas[i];
+        a.x += a.vx;
+        a.y += a.vy;
 
-function animate() {
-  drawBubbles();
-  requestAnimationFrame(animate);
-}
+        if (a.x - radius < 0 || a.x + radius > width) a.vx *= -1;
+        if (a.y - radius < 50 || a.y + radius > height) a.vy *= -1;
 
-animate();
-</script>
+        // Bounce off each other
+        for (let j = i + 1; j < ideas.length; j++) {
+          let b = ideas[j];
+          let dx = a.x - b.x;
+          let dy = a.y - b.y;
+          let dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < radius * 2) {
+            // Simple elastic collision
+            let angle = Math.atan2(dy, dx);
+            let tx = a.x - Math.cos(angle) * radius * 2;
+            let ty = a.y - Math.sin(angle) * radius * 2;
+            b.x = tx;
+            b.y = ty;
+            [a.vx, b.vx] = [b.vx, a.vx];
+            [a.vy, b.vy] = [b.vy, a.vy];
+          }
+        }
+
+        ctx.beginPath();
+        ctx.arc(a.x, a.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = a.color;
+        ctx.fill();
+        ctx.fillStyle = "black";
+        ctx.font = "bold 14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(a.title, a.x, a.y);
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+
+    function saveIdeas() {
+      const blob = new Blob([JSON.stringify(ideas, null, 2)], {type: "application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "ideas.json";
+      a.click();
+    }
+
+    document.getElementById("fileLoader").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          ideas = JSON.parse(event.target.result);
+        } catch (err) {
+          alert("Invalid JSON file.");
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Initial ideas
+    addIdea(200, 200, "TV Nasty", "My most ambitious concept");
+    addIdea(500, 300, "Lucky Days", "Avatar morning show");
+    addIdea(300, 500, "Break Point", "Extreme sports transition tale");
+    addIdea(600, 200, "Pierette Les Furis", "Stylised femme thriller");
+    addIdea(800, 400, "Seare Madre", "Treasure of the Sierra Madre update");
+    addIdea(700, 100, "How Not to Have a Sex Change", "Darkly comic documentary");
+  </script>
 </body>
 </html>
