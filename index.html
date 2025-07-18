@@ -73,6 +73,7 @@
     <div>
       <button onclick="savePanel()">Save</button>
       <button onclick="changeColor()">Change Color</button>
+      <button onclick="deleteIdea()">Delete</button>
       <button onclick="closePanel()">Close</button>
     </div>
   </div>
@@ -137,6 +138,13 @@
       selectedIdea.title = document.getElementById("title").value;
       selectedIdea.description = document.getElementById("description").value;
       panel.style.display = "none";
+    }
+    function deleteIdea() {
+      if (selectedIdea) {
+        ideas = ideas.filter(idea => idea !== selectedIdea);
+        selectedIdea = null;
+      panel.style.display = "none";
+      }
     }
 
     function closePanel() {
