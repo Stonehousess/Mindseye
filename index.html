@@ -59,182 +59,202 @@
 </head>
 <body>
   <div id="toolbar">
-    <div><strong>MindsEye</strong></div>
-    <div>
-      <button onclick="saveIdeas()">Save Ideas</button>
-      <input type="file" id="fileLoader" accept=".json" style="display:none" />
-      <button onclick="document.getElementById('fileLoader').click()">Load Ideas</button>
-    </div>
+  <div><strong>MindsEye</strong></div>
+  <div>
+    <button onclick="saveIdeas()">Save Ideas</button>
+    <input type="file" id="fileLoader" accept=".json" style="display:none" />
+    <button onclick="document.getElementById('fileLoader').click()">Load Ideas</button>
+    <label style="margin-left: 10px;">Speed:
+      <input type="range" min="0.2" max="3" step="0.1" value="1" 
+             onchange="speedMultiplier = parseFloat(this.value)">
+    </label>
   </div>
+</div>
   <canvas id="canvas"></canvas>
   <div class="panel" id="panel">
-    <input id="title" placeholder="Title" />
-    <textarea id="description" rows="5" placeholder="Description"></textarea>
-    <div>
-      <button onclick="savePanel()">Save</button>
-      <button onclick="changeColor()">Change Color</button>
-      <button onclick="deleteIdea()">Delete</button>
-      <button onclick="closePanel()">Close</button>
-    </div>
+  <input id="title" placeholder="Title" />
+  <textarea id="description" rows="5" placeholder="Description"></textarea>
+  <div>
+    <button onclick="savePanel()">Save</button>
+    <button onclick="changeColor()">Change Color</button>
+    <button onclick="changeTextColor()">Text Color</button>
+    <button onclick="deleteIdea()">Delete</button>
+    <button onclick="closePanel()">Close</button>
   </div>
+</div>
   <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const panel = document.getElementById("panel");
-    let width, height;
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const panel = document.getElementById("panel");
+  let width, height;
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  const radius = 80;
+  const border = 10;
+  let ideas = [];
+  let selectedIdea = null;
+  let speedMultiplier = 1;
+
+  function randomColor() {
+    return `hsl(${Math.random()*360}, 100%, 70%)`;
+  }
+
+  function randomTextColor() {
+    const colors = ['white', 'black', 'cyan', 'yellow', 'magenta', 'lime', 'red'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  function addIdea(x, y, title = "New Idea", description = "", color = randomColor(), textColor = "white") {
+    ideas.push({
+      title,
+      description,
+      x, y,
+      vx: (Math.random() * 2 - 1) * 1.5,
+      vy: (Math.random() * 2 - 1) * 1.5,
+      color,
+      textColor
+    });
+  }
+
+  canvas.addEventListener("click", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    let clicked = false;
+    for (let idea of ideas) {
+      const dx = x - idea.x;
+      const dy = y - idea.y;
+      if (Math.sqrt(dx * dx + dy * dy) < radius) {
+        selectedIdea = idea;
+        showPanel();
+        clicked = true;
+        break;
+      }
     }
-    window.addEventListener("resize", resize);
-    resize();
-
-    const radius = 80;
-    let ideas = [];
-    let selectedIdea = null;
-
-    function randomColor() {
-      return `hsl(${Math.random()*360}, 100%, 70%)`;
+    if (!clicked) {
+      addIdea(x, y);
     }
+  });
 
-    function addIdea(x, y, title = "New Idea", description = "", color = randomColor()) {
-      ideas.push({
-        title,
-        description,
-        x, y,
-        vx: (Math.random() * 2 - 1) * 1.5,
-        vy: (Math.random() * 2 - 1) * 1.5,
-        color
+  function showPanel() {
+    document.getElementById("title").value = selectedIdea.title;
+    document.getElementById("description").value = selectedIdea.description;
+    panel.style.display = "block";
+  }
+
+  function savePanel() {
+    selectedIdea.title = document.getElementById("title").value;
+    selectedIdea.description = document.getElementById("description").value;
+    panel.style.display = "none";
+  }
+
+  function deleteIdea() {
+    if (selectedIdea) {
+      ideas = ideas.filter(idea => idea !== selectedIdea);
+      selectedIdea = null;
+      panel.style.display = "none";
+    }
+  }
+
+  function closePanel() {
+    panel.style.display = "none";
+  }
+
+  function changeColor() {
+    selectedIdea.color = randomColor();
+  }
+
+  function changeTextColor() {
+    selectedIdea.textColor = randomTextColor();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+    for (let i = 0; i < ideas.length; i++) {
+      let a = ideas[i];
+      a.x += a.vx * speedMultiplier;
+      a.y += a.vy * speedMultiplier;
+
+      if (a.x - radius < border || a.x + radius > width - border) a.vx *= -1;
+      if (a.y - radius < border + 50 || a.y + radius > height - border) a.vy *= -1;
+
+      for (let j = i + 1; j < ideas.length; j++) {
+        let b = ideas[j];
+        let dx = a.x - b.x;
+        let dy = a.y - b.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < radius * 2) {
+          let angle = Math.atan2(dy, dx);
+          let tx = a.x - Math.cos(angle) * radius * 2;
+          let ty = a.y - Math.sin(angle) * radius * 2;
+          b.x = tx;
+          b.y = ty;
+          [a.vx, b.vx] = [b.vx, a.vx];
+          [a.vy, b.vy] = [b.vy, a.vy];
+        }
+      }
+
+      const gradient = ctx.createRadialGradient(a.x, a.y, radius * 0.6, a.x, a.y, radius);
+      gradient.addColorStop(0, a.color);
+      gradient.addColorStop(1, "black");
+
+      ctx.beginPath();
+      ctx.arc(a.x, a.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = a.color;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      ctx.fillStyle = a.textColor || "white";
+      ctx.font = "bold 14px Tahoma";
+      ctx.textAlign = "center";
+      const words = a.title.split(" ");
+      words.forEach((word, idx) => {
+        ctx.fillText(word, a.x, a.y + idx * 16 - (words.length - 1) * 8);
       });
     }
+    requestAnimationFrame(draw);
+  }
+  draw();
 
-    canvas.addEventListener("click", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      let clicked = false;
-      for (let idea of ideas) {
-        const dx = x - idea.x;
-        const dy = y - idea.y;
-        if (Math.sqrt(dx * dx + dy * dy) < radius) {
-          selectedIdea = idea;
-          showPanel();
-          clicked = true;
-          break;
-        }
+  function saveIdeas() {
+    const blob = new Blob([JSON.stringify(ideas, null, 2)], {type: "application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ideas.json";
+    a.click();
+  }
+
+  document.getElementById("fileLoader").addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      try {
+        ideas = JSON.parse(event.target.result);
+      } catch (err) {
+        alert("Invalid JSON file.");
       }
-      if (!clicked) {
-        addIdea(x, y);
-      }
-    });
+    };
+    reader.readAsText(file);
+  });
 
-    function showPanel() {
-      document.getElementById("title").value = selectedIdea.title;
-      document.getElementById("description").value = selectedIdea.description;
-      panel.style.display = "block";
-    }
-
-    function savePanel() {
-      selectedIdea.title = document.getElementById("title").value;
-      selectedIdea.description = document.getElementById("description").value;
-      panel.style.display = "none";
-    }
-    function deleteIdea() {
-      if (selectedIdea) {
-        ideas = ideas.filter(idea => idea !== selectedIdea);
-        selectedIdea = null;
-      panel.style.display = "none";
-      }
-    }
-
-    function closePanel() {
-      panel.style.display = "none";
-    }
-
-    function changeColor() {
-      selectedIdea.color = randomColor();
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, width, height);
-      for (let i = 0; i < ideas.length; i++) {
-        let a = ideas[i];
-        a.x += a.vx;
-        a.y += a.vy;
-
-        if (a.x - radius < 0 || a.x + radius > width) a.vx *= -1;
-        if (a.y - radius < 50 || a.y + radius > height) a.vy *= -1;
-
-        for (let j = i + 1; j < ideas.length; j++) {
-          let b = ideas[j];
-          let dx = a.x - b.x;
-          let dy = a.y - b.y;
-          let dist = Math.sqrt(dx*dx + dy*dy);
-          if (dist < radius * 2) {
-            let angle = Math.atan2(dy, dx);
-            let tx = a.x - Math.cos(angle) * radius * 2;
-            let ty = a.y - Math.sin(angle) * radius * 2;
-            b.x = tx;
-            b.y = ty;
-            [a.vx, b.vx] = [b.vx, a.vx];
-            [a.vy, b.vy] = [b.vy, a.vy];
-          }
-        }
-
-        const gradient = ctx.createRadialGradient(a.x, a.y, radius * 0.6, a.x, a.y, radius);
-        gradient.addColorStop(0, a.color);
-        gradient.addColorStop(1, "black");
-
-        ctx.beginPath();
-        ctx.arc(a.x, a.y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = gradient;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = a.color;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = "white";
-        ctx.font = "bold 14px sans-serif";
-        ctx.textAlign = "center";
-        const words = a.title.split(" ");
-        words.forEach((word, idx) => {
-          ctx.fillText(word, a.x, a.y + idx * 16 - (words.length - 1) * 8);
-        });
-      }
-      requestAnimationFrame(draw);
-    }
-    draw();
-
-    function saveIdeas() {
-      const blob = new Blob([JSON.stringify(ideas, null, 2)], {type: "application/json"});
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "ideas.json";
-      a.click();
-    }
-
-    document.getElementById("fileLoader").addEventListener("change", function(e) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        try {
-          ideas = JSON.parse(event.target.result);
-        } catch (err) {
-          alert("Invalid JSON file.");
-        }
-      };
-      reader.readAsText(file);
-    });
-
-    addIdea(200, 200, "TV Nasty", "The most ambitious concept");
-    addIdea(500, 300, "Lucky Days", "Avatar morning show");
-    addIdea(300, 500, "Break Point", "Extreme transitional tale");
-    addIdea(600, 250, "Pierette Les Furis", "Stylised femme thriller");
-    addIdea(800, 400, "Sound Meadre", "Sound Meadre");
-    addIdea(700, 600, "How Not 2 Have an XChange", "Darkly comic documentary");
-    addIdea(400, 700, "Stationary", "A Tokyo Love Story");
-    addIdea(350, 800, "Free Radicals", "A Real Mocumentary");
-    addIdea(750, 750, "To DO", "Other Stuff");
-  </script>
+  // Initial Bubbles
+  addIdea(200, 200, "TV Nasty", "The most ambitious concept");
+  addIdea(500, 300, "Lucky Days", "Avatar morning show");
+  addIdea(300, 500, "Break Point", "Extreme transitional tale");
+  addIdea(600, 250, "Pierette Les Furis", "Stylised femme thriller");
+  addIdea(800, 400, "Sound Meadre", "Sound Meadre");
+  addIdea(700, 600, "How Not 2 Have an XChange", "Darkly comic documentary");
+  addIdea(400, 700, "Stationary", "A Tokyo Love Story");
+  addIdea(350, 800, "Free Radicals", "A Real Mocumentary");
+  addIdea(750, 750, "To DO", "Other Stuff");
+</script>
 </body>
 </html>
