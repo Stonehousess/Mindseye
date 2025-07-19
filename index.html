@@ -181,8 +181,22 @@
       a.x += a.vx * speedMultiplier;
       a.y += a.vy * speedMultiplier;
 
-      if (a.x - radius < border || a.x + radius > width - border) a.vx *= -1;
-      if (a.y - radius < border + 50 || a.y + radius > height - border) a.vy *= -1;
+      if (a.x - radius < border) {
+  a.x = border + radius;
+  a.vx *= -1;
+}
+if (a.x + radius > width - border) {
+  a.x = width - border - radius;
+  a.vx *= -1;
+}
+if (a.y - radius < border + 50) {
+  a.y = border + 50 + radius;
+  a.vy *= -1;
+}
+if (a.y + radius > height - border) {
+  a.y = height - border - radius;
+  a.vy *= -1;
+}
 
       for (let j = i + 1; j < ideas.length; j++) {
         let b = ideas[j];
