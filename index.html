@@ -133,7 +133,28 @@ function addIdea(x, y, title = "New Idea", description = "", color = randomColor
     font: fonts[0]
   });
 }
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  let clicked = false;
 
+  for (let idea of ideas) {
+    const dx = x - idea.x;
+    const dy = y - idea.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < idea.radius) {
+      selectedIdea = idea;
+      showPanel();
+      clicked = true;
+      break;
+    }
+  }
+
+  if (!clicked) {
+    addIdea(x, y);
+  }
+});
 function showPanel() {
   document.getElementById("title").value = selectedIdea.title;
   document.getElementById("description").value = selectedIdea.description;
