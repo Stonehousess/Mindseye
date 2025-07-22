@@ -32,7 +32,7 @@
       left: 50%;
       transform: translateX(-50%);
       width: 400px;
-      background: #222;
+      background: rgba(34, 34, 34, 0.92);
       color: white;
       padding: 20px;
       border-radius: 16px;
@@ -59,216 +59,245 @@
 </head>
 <body>
   <div id="toolbar">
-  <div><strong>🧿MindsEye🧿</strong></div>
-  <div>
-    <button onclick="saveIdeas()">Save Ideas</button>
-    <input type="file" id="fileLoader" accept=".json" style="display:none" />
-    <button onclick="document.getElementById('fileLoader').click()">Load Ideas</button>
-    <label style="margin-left: 10px;">Speed:
-      <input type="range" min="0.2" max="3" step="0.1" value="1" 
-             onchange="speedMultiplier = parseFloat(this.value)">
-    </label>
+    <div><strong>🧿MindsEye🧿</strong></div>
+    <div>
+      <button onclick="saveIdeas()">Save Ideas</button>
+      <input type="file" id="fileLoader" accept=".json" style="display:none" />
+      <button onclick="document.getElementById('fileLoader').click()">Load Ideas</button>
+      <label style="margin-left: 10px;">Speed:
+        <input type="range" min="0.2" max="3" step="0.1" value="1" 
+               onchange="speedMultiplier = parseFloat(this.value)">
+      </label>
+      <label style="margin-left: 10px;">Image:
+        <input type="file" id="bgLoader" accept="image/*" />
+      </label>
+    </div>
   </div>
-</div>
+
   <canvas id="canvas"></canvas>
+
   <div class="panel" id="panel">
-  <input id="title" placeholder="Title" />
-  <textarea id="description" rows="5" placeholder="Description"></textarea>
-  <div>
-    <button onclick="savePanel()">Save</button>
-    <button onclick="changeColor()">💭️Color</button>
-    <button onclick="changeTextColor()">💬Color</button>
-    <button onclick="deleteIdea()">Delete</button>
-    <button onclick="closePanel()">Close</button>
+    <input id="title" placeholder="Title" />
+    <textarea id="description" rows="5" placeholder="Description"></textarea>
+
+    <label>Size:
+      <input type="range" id="sizeSlider" min="10" max="100" value="80"
+             oninput="selectedIdea.radius = parseInt(this.value)">
+    </label>
+
+    <div style="margin-top: 10px;">
+      <button onclick="savePanel()">Save</button>
+      <button onclick="changeColor()">💭️Color</button>
+      <button onclick="changeTextColor()">💬Color</button>
+      <button onclick="cycleFont()">Font</button>
+      <button onclick="deleteIdea()">Delete</button>
+      <button onclick="closePanel()">Close</button>
+    </div>
   </div>
-</div>
   <script>
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
-  const panel = document.getElementById("panel");
-  let width, height;
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const panel = document.getElementById("panel");
+let width, height;
+function resize() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
 
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
+const border = 10;
+let speedMultiplier = 1;
+let ideas = [];
+let selectedIdea = null;
+let backgroundImage = null;
+const fonts = ["Tahoma", "Verdana", "Courier New", "Georgia", "Arial"];
+let fontIndex = 0;
+
+function randomColor() {
+  return `hsl(${Math.random() * 360}, 100%, 70%)`;
+}
+function randomTextColor() {
+  const colors = ['white', 'black', 'cyan', 'yellow', 'magenta', 'lime', 'red'];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+function addIdea(x, y, title = "New Idea", description = "", color = randomColor(), textColor = "white", radius = 80) {
+  const maxSpeed = 3; // doubled from previous 1.5
+  ideas.push({
+    title, description,
+    x, y,
+    vx: (Math.random() * 2 - 1) * maxSpeed,
+    vy: (Math.random() * 2 - 1) * maxSpeed,
+    color, textColor,
+    radius,
+    font: fonts[0]
+  });
+}
+
+function showPanel() {
+  document.getElementById("title").value = selectedIdea.title;
+  document.getElementById("description").value = selectedIdea.description;
+  document.getElementById("sizeSlider").value = selectedIdea.radius || 80;
+  panel.style.display = "block";
+}
+function savePanel() {
+  selectedIdea.title = document.getElementById("title").value;
+  selectedIdea.description = document.getElementById("description").value;
+  panel.style.display = "none";
+}
+function deleteIdea() {
+  if (selectedIdea) {
+    ideas = ideas.filter(idea => idea !== selectedIdea);
+    selectedIdea = null;
+    panel.style.display = "none";
   }
-  window.addEventListener("resize", resize);
-  resize();
+}
+function closePanel() {
+  panel.style.display = "none";
+}
+function changeColor() {
+  selectedIdea.color = randomColor();
+}
+function changeTextColor() {
+  selectedIdea.textColor = randomTextColor();
+}
+function cycleFont() {
+  fontIndex = (fontIndex + 1) % fonts.length;
+  selectedIdea.font = fonts[fontIndex];
+}
 
-  const radius = 80;
-  const border = 10;
-  let ideas = [];
-  let selectedIdea = null;
-  let speedMultiplier = 1;
+function draw() {
+  if (backgroundImage) ctx.drawImage(backgroundImage, 0, 0, width, height);
+  else ctx.clearRect(0, 0, width, height);
 
-  function randomColor() {
-    return `hsl(${Math.random()*360}, 100%, 70%)`;
-  }
+  for (let i = 0; i < ideas.length; i++) {
+    let a = ideas[i];
+    a.x += a.vx * speedMultiplier;
+    a.y += a.vy * speedMultiplier;
 
-  function randomTextColor() {
-    const colors = ['white', 'black', 'cyan', 'yellow', 'magenta', 'lime', 'red'];
-    return colors[Math.floor(Math.random() * colors.length)];
-  }
+    if (a.x - a.radius < border) {
+      a.x = border + a.radius;
+      a.vx *= -1;
+    }
+    if (a.x + a.radius > width - border) {
+      a.x = width - border - a.radius;
+      a.vx *= -1;
+    }
+    if (a.y - a.radius < border + 50) {
+      a.y = border + 50 + a.radius;
+      a.vy *= -1;
+    }
+    if (a.y + a.radius > height - border) {
+      a.y = height - border - a.radius;
+      a.vy *= -1;
+    }
 
-  function addIdea(x, y, title = "New Idea", description = "", color = randomColor(), textColor = "white") {
-    ideas.push({
-      title,
-      description,
-      x, y,
-      vx: (Math.random() * 2 - 1) * 1.5,
-      vy: (Math.random() * 2 - 1) * 1.5,
-      color,
-      textColor
+    for (let j = i + 1; j < ideas.length; j++) {
+      let b = ideas[j];
+      let dx = a.x - b.x;
+      let dy = a.y - b.y;
+      let dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < a.radius + b.radius) {
+        let angle = Math.atan2(dy, dx);
+        let tx = a.x - Math.cos(angle) * (a.radius + b.radius);
+        let ty = a.y - Math.sin(angle) * (a.radius + b.radius);
+        b.x = tx;
+        b.y = ty;
+        [a.vx, b.vx] = [b.vx, a.vx];
+        [a.vy, b.vy] = [b.vy, a.vy];
+      }
+    }
+
+    const gradient = ctx.createRadialGradient(a.x, a.y, a.radius * 0.6, a.x, a.y, a.radius);
+    gradient.addColorStop(0, a.color);
+    gradient.addColorStop(1, "black");
+
+    ctx.beginPath();
+    ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
+    ctx.fillStyle = gradient;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = a.color;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = a.textColor || "white";
+    ctx.font = "bold 14px " + (a.font || "Tahoma");
+    ctx.textAlign = "center";
+    const words = a.title.split(" ");
+    words.forEach((word, idx) => {
+      ctx.fillText(word, a.x, a.y + idx * 16 - (words.length - 1) * 8);
     });
   }
 
-  canvas.addEventListener("click", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    let clicked = false;
-    for (let idea of ideas) {
-      const dx = x - idea.x;
-      const dy = y - idea.y;
-      if (Math.sqrt(dx * dx + dy * dy) < radius) {
-        selectedIdea = idea;
-        showPanel();
-        clicked = true;
-        break;
-      }
-    }
-    if (!clicked) {
-      addIdea(x, y);
-    }
+  requestAnimationFrame(draw);
+}
+draw();
+
+function saveIdeas() {
+  const dataToSave = ideas.map(idea => ({
+    title: idea.title,
+    description: idea.description,
+    x: idea.x,
+    y: idea.y,
+    vx: idea.vx,
+    vy: idea.vy,
+    color: idea.color,
+    textColor: idea.textColor,
+    radius: idea.radius,
+    font: idea.font
+  }));
+
+  const blob = new Blob([JSON.stringify(dataToSave, null, 2)], {
+    type: "application/json"
   });
 
-  function showPanel() {
-    document.getElementById("title").value = selectedIdea.title;
-    document.getElementById("description").value = selectedIdea.description;
-    panel.style.display = "block";
-  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ideas.json";
+  a.click();
+}
 
-  function savePanel() {
-    selectedIdea.title = document.getElementById("title").value;
-    selectedIdea.description = document.getElementById("description").value;
-    panel.style.display = "none";
-  }
-
-  function deleteIdea() {
-    if (selectedIdea) {
-      ideas = ideas.filter(idea => idea !== selectedIdea);
-      selectedIdea = null;
-      panel.style.display = "none";
+document.getElementById("fileLoader").addEventListener("change", function (e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    try {
+      const loaded = JSON.parse(event.target.result);
+      ideas = loaded.map(idea => ({
+        ...idea,
+        font: idea.font || fonts[0],
+        radius: idea.radius || 80
+      }));
+    } catch (err) {
+      alert("Invalid JSON file.");
     }
-  }
+  };
+  reader.readAsText(file);
+});
 
-  function closePanel() {
-    panel.style.display = "none";
-  }
-
-  function changeColor() {
-    selectedIdea.color = randomColor();
-  }
-
-  function changeTextColor() {
-    selectedIdea.textColor = randomTextColor();
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-    for (let i = 0; i < ideas.length; i++) {
-      let a = ideas[i];
-      a.x += a.vx * speedMultiplier;
-      a.y += a.vy * speedMultiplier;
-
-      if (a.x - radius < border) {
-  a.x = border + radius;
-  a.vx *= -1;
-}
-if (a.x + radius > width - border) {
-  a.x = width - border - radius;
-  a.vx *= -1;
-}
-if (a.y - radius < border + 50) {
-  a.y = border + 50 + radius;
-  a.vy *= -1;
-}
-if (a.y + radius > height - border) {
-  a.y = height - border - radius;
-  a.vy *= -1;
-}
-
-      for (let j = i + 1; j < ideas.length; j++) {
-        let b = ideas[j];
-        let dx = a.x - b.x;
-        let dy = a.y - b.y;
-        let dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < radius * 2) {
-          let angle = Math.atan2(dy, dx);
-          let tx = a.x - Math.cos(angle) * radius * 2;
-          let ty = a.y - Math.sin(angle) * radius * 2;
-          b.x = tx;
-          b.y = ty;
-          [a.vx, b.vx] = [b.vx, a.vx];
-          [a.vy, b.vy] = [b.vy, a.vy];
-        }
-      }
-
-      const gradient = ctx.createRadialGradient(a.x, a.y, radius * 0.6, a.x, a.y, radius);
-      gradient.addColorStop(0, a.color);
-      gradient.addColorStop(1, "black");
-
-      ctx.beginPath();
-      ctx.arc(a.x, a.y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = gradient;
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = a.color;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      ctx.fillStyle = a.textColor || "white";
-      ctx.font = "bold 14px Tahoma";
-      ctx.textAlign = "center";
-      const words = a.title.split(" ");
-      words.forEach((word, idx) => {
-        ctx.fillText(word, a.x, a.y + idx * 16 - (words.length - 1) * 8);
-      });
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
-
-  function saveIdeas() {
-    const blob = new Blob([JSON.stringify(ideas, null, 2)], {type: "application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "ideas.json";
-    a.click();
-  }
-
-  document.getElementById("fileLoader").addEventListener("change", function(e) {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      try {
-        ideas = JSON.parse(event.target.result);
-      } catch (err) {
-        alert("Invalid JSON file.");
-      }
+document.getElementById("bgLoader").addEventListener("change", function (e) {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    const img = new Image();
+    img.onload = function () {
+      backgroundImage = img;
     };
-    reader.readAsText(file);
-  });
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 
-  // Initial Bubbles
-  addIdea(200, 200, "TV Nasty", "The most ambitious concept");
-  addIdea(500, 300, "Lucky Days", "Avatar morning show");
-  addIdea(300, 500, "Break Point", "Extreme transitional tale");
-  addIdea(600, 250, "Pierette Les Furis", "Stylised femme thriller");
-  addIdea(800, 400, "Sound Meadre", "Sound Meadre");
-  addIdea(700, 600, "How Not 2 Have an XChange", "Darkly comic documentary");
-  addIdea(400, 700, "Stationary", "A Tokyo Love Story");
-  addIdea(350, 800, "Free Radicals", "A Real Mocumentary");
-  addIdea(750, 750, "To DO", "Other Stuff");
+// Initial Ideas
+addIdea(200, 200, "TV Nasty", "The most ambitious concept");
+addIdea(500, 300, "Lucky Days", "Avatar morning show");
+addIdea(300, 500, "Break Point", "Extreme transitional tale");
+addIdea(600, 250, "Pierette Les Furis", "Stylised femme thriller");
+addIdea(800, 400, "Sound Meadre", "Sound Meadre");
+addIdea(700, 600, "How Not 2 Have an XChange", "Darkly comic documentary");
+addIdea(400, 700, "Stationary", "A Tokyo Love Story");
+addIdea(350, 800, "Free Radicals", "A Real Mocumentary");
+addIdea(750, 750, "To DO", "Other Stuff");
 </script>
 </body>
 </html>
