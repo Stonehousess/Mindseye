@@ -55,6 +55,17 @@
       border: none;
       cursor: pointer;
     }
+    #bgVideo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -2;
+    pointer-events: none;
+    display: none; /* default hidden, shown when video is loaded */
+}
   </style>
 </head>
 <body>
@@ -81,7 +92,7 @@
     </div>
   </div>
 
-  <video id="bgVideo" autoplay muted loop playsinline style="position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-2; display:none;"></video>
+ <video id="bgVideo" autoplay muted loop playsinline style="position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; z-index:-2; display:none; pointer-events: none;"></video>
   <iframe id="ytFrame" frameborder="0" allow="autoplay" allowfullscreen style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-3; display:none;"></iframe>
   <canvas id="canvas"></canvas>
 
