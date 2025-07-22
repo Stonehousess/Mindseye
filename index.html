@@ -59,13 +59,13 @@
 </head>
 <body>
   <div id="toolbar">
-    <div><strong>🧾MindsEye🧾</strong></div>
+    <div><strong>🧿MindsEye🧿</strong></div>
     <div>
       <button onclick="saveIdeas()">Save Ideas</button>
       <input type="file" id="fileLoader" accept=".json" style="display:none" />
       <button onclick="document.getElementById('fileLoader').click()">Load Ideas</button>
       <label style="margin-left: 10px;">Speed:
-        <input type="range" min="0.2" max="3" step="0.1" value="1" onchange="speedMultiplier = parseFloat(this.value)">
+        <input type="range" min="0.0" max="3" step="0.1" value="1" onchange="speedMultiplier = parseFloat(this.value)">
       </label>
       <label style="margin-left: 10px;">Image:
         <input type="file" id="bgLoader" accept="image/*" />
