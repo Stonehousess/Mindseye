@@ -293,12 +293,19 @@
   video.style.display = "block";
 
   // Force video to reload and play after src set
+  video.src = objectURL;
+  video.style.display = "block";
+
   video.load();
-  video.oncanplaythrough = () => {
-    video.play().catch(err => {
-      console.warn("Video autoplay blocked. User interaction may be needed.");
-    });
-  };
+
+  setTimeout(() => {
+  video.play().then(() => {
+    console.log("Video playing as background.");
+  }).catch((err) => {
+    console.warn("Autoplay blocked, trying again on user interaction:", err);
+    document.body.addEventListener("click", () => video.play(), { once: true });
+  });
+}, 100);
 });
 let isDragging = false;
     let dragOffsetX = 0;
