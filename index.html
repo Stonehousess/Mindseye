@@ -266,20 +266,74 @@
       reader.readAsDataURL(file);
     });
 
-    document.getElementById("videoLoader").addEventListener("change", function (e) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const video = document.getElementById("bgVideo");
-        backgroundImage = null;
-        document.getElementById("ytFrame").style.display = "none";
-        video.src = event.target.result;
-        video.style.display = "block";
-        video.play();
-      };
-      reader.readAsDataURL(file);
+   document.getElementById("videoLoader").addEventListener("change", function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const video = document.getElementById("bgVideo");
+  const iframe = document.getElementById("ytFrame");
+
+  backgroundImage = null;
+  iframe.style.display = "none";
+  iframe.src = "";
+
+  const objectURL = URL.createObjectURL(file); // ⬅️ Better than FileReader for video
+  video.src = objectURL;
+  video.style.display = "block";
+
+  // Force video to reload and play after src set
+  video.load();
+  video.oncanplaythrough = () => {
+    video.play().catch(err => {
+      console.warn("Video autoplay blocked. User interaction may be needed.");
+    });
+  };
+});
+let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    let dragIdea = null;
+    let mouseMoved = false;
+
+    canvas.addEventListener("mousedown", (e) => {
+      if (speedMultiplier !== 0 || panel.style.display === "block") return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      for (let idea of ideas) {
+        const dx = x - idea.x;
+        const dy = y - idea.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < idea.radius) {
+          isDragging = true;
+          dragIdea = idea;
+          dragOffsetX = dx;
+          dragOffsetY = dy;
+          mouseMoved = false;
+          return;
+        }
+      }
     });
 
+    canvas.addEventListener("mousemove", (e) => {
+      if (isDragging && dragIdea && speedMultiplier === 0) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        dragIdea.x = x - dragOffsetX;
+        dragIdea.y = y - dragOffsetY;
+        mouseMoved = true;
+      }
+    });
+
+    canvas.addEventListener("mouseup", (e) => {
+      if (isDragging && dragIdea && !mouseMoved) {
+        selectedIdea = dragIdea;
+        showPanel();
+      }
+      isDragging = false;
+      dragIdea = null;
+    });
     function loadYouTubeVideo() {
       const url = document.getElementById("youtubeLink").value;
       const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/);
