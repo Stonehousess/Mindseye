@@ -72,9 +72,9 @@
   <div id="toolbar">
     <div><strong>🧿MindsEye🧿</strong></div>
     <div>
-      <button onclick="saveIdeas()">Save Ideas</button>
+      <button onclick="saveIdeas()">Save .json</button>
       <input type="file" id="fileLoader" accept=".json" style="display:none" />
-      <button onclick="document.getElementById('fileLoader').click()">Load Ideas</button>
+      <button onclick="document.getElementById('fileLoader').click()">Load .json</button>
       <label style="margin-left: 10px;">Speed:
         <input type="range" min="0.0" max="3" step="0.1" value="0" onchange="speedMultiplier = parseFloat(this.value)">
       </label>
@@ -84,8 +84,8 @@
       <label style="margin-left: 10px;">Video File:
         <input type="file" id="videoLoader" accept="video/*" />
       </label>
-      <label style="margin-left: 10px;">YouTube Link:
-        <input type="text" id="youtubeLink" placeholder="Paste YouTube URL" style="width:180px;" />
+      <label style="margin-left: 10px;">Video Link:
+        <input type="text" id="youtubeLink" placeholder="Paste Video URL" style="width:180px;" />
         <button onclick="loadYouTubeVideo()">Load</button>
       </label>
       <button onclick="clearBackground()" style="margin-left:10px;">Clear BG</button>
@@ -502,7 +502,7 @@ let isDragging = false;
   },
   {
     "title": "Devon ICB",
-    "description": "Martyn Nicholl\nMegan Mears Barrett",
+    "description": "Martyn\nMegan Barrett",
     "x": 498.30662123292547,
     "y": 140,
     "vx": 0.9874945947125119,
