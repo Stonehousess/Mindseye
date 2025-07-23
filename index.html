@@ -630,13 +630,13 @@ function showToolbar() {
   clearTimeout(inactivityTimeout);
   inactivityTimeout = setTimeout(() => {
     toolbar.style.opacity = "0";
-  }, 10000); // 10 seconds
+  }, 5000); // 5 seconds
 }
 
 // Show on any mouse movement
 document.addEventListener("mousemove", showToolbar);
 
-// Initially call it so toolbar hides after 10s
+// Initially call it so toolbar hides after 5s
 showToolbar();
   </script>
 </body>
