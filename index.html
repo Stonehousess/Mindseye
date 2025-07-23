@@ -101,6 +101,8 @@
           <option value="lakers">Lakers</option>
         </select>
       </label>
+      <button onclick="cycleBackground()" style="margin-left:10px;">🔁 Cycle Background</button>
+
       <button onclick="deleteAllIdeas()" style="margin-left:10px;">Delete All Ideas</button>
     </div>
   </div>
@@ -720,36 +722,41 @@ document.addEventListener("mousemove", showToolbar);
 // Initially call it so toolbar hides after 5s
 showToolbar();
   
+    let currentTheme = "default";
+    let backgroundIndex = 1;
+
     const themePresets = {
       default: {
         ideas: [...ideas],
-        bg: "me1.png"
+        bg: "default1.png"
       },
       cqc: {
         ideas: [
           { title: "CQC Alert", description: "Inspection Report Due", x: 400, y: 300, vx: 1, vy: 1, color: "orange", textColor: "white", radius: 80, font: fonts[0] }
         ],
-        bg: "me2.png"
+        bg: "cqc1.png"
       },
       argyle: {
         ideas: [
           { title: "Argyle Win", description: "3-1 at Home Park", x: 500, y: 350, vx: -1, vy: 1, color: "green", textColor: "black", radius: 90, font: fonts[0] }
         ],
-        bg: "me3.png"
+        bg: "argyle1.png"
       },
       blank: {
         ideas: [],
-        bg: "me4.png"
+        bg: "blank1.png"
       },
       lakers: {
         ideas: [
           { title: "🏀 Lakers", description: "Playoff Push", x: 600, y: 400, vx: 1.5, vy: -1, color: "purple", textColor: "yellow", radius: 85, font: fonts[0] }
         ],
-        bg: "me5.png"
+        bg: "lakers1.png"
       }
     };
 
     function switchTheme(themeName) {
+      currentTheme = themeName;
+      backgroundIndex = 1;
       const theme = themePresets[themeName];
       if (!theme) return;
       ideas = theme.ideas.map(idea => ({
@@ -762,7 +769,20 @@ showToolbar();
       img.onload = function () {
         backgroundImage = img;
       };
-      img.src = theme.bg;
+      img.src = `${themeName}1.png`;
+    }
+
+    function cycleBackground() {
+      backgroundIndex += 1;
+      const img = new Image();
+      img.onload = function () {
+        backgroundImage = img;
+      };
+      img.onerror = function () {
+        backgroundIndex = 1;
+        img.src = `${currentTheme}1.png`;
+      };
+      img.src = `${currentTheme}${backgroundIndex}.png`;
     }
 </script>
 </body>
