@@ -116,6 +116,7 @@
   </div>
 
   <script>
+    let movementDelayActive = true;
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const panel = document.getElementById("panel");
@@ -127,7 +128,13 @@
     window.addEventListener("resize", resize);
     resize();
 
-    const border = 10;
+    movementDelayActive = true; // Start with movement disabled
+    setTimeout(() => {
+    movementDelayActive = false; // Enable after 10 seconds
+ }, 10000); // 10 seconds
+
+const border = 10;
+    
     let speedMultiplier = 1;
     let ideas = [];
     let selectedIdea = null;
@@ -198,8 +205,9 @@
 
       for (let i = 0; i < ideas.length; i++) {
         let a = ideas[i];
-        a.x += a.vx * speedMultiplier;
-        a.y += a.vy * speedMultiplier;
+        const actualSpeed = movementDelayActive ? 0 : speedMultiplier;
+        a.x += a.vx * actualSpeed;
+        a.y += a.vy * actualSpeed;
 
         if (a.x - a.radius < border) { a.x = border + a.radius; a.vx *= -1; }
         if (a.x + a.radius > width - border) { a.x = width - border - a.radius; a.vx *= -1; }
@@ -254,18 +262,30 @@
     }
 
     document.getElementById("fileLoader").addEventListener("change", function (e) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        try {
-          const loaded = JSON.parse(event.target.result);
-          ideas = loaded.map(idea => ({ ...idea, font: idea.font || fonts[0], radius: idea.radius || 80 }));
-        } catch (err) {
-          alert("Invalid JSON file.");
-        }
-      };
-      reader.readAsText(file);
-    });
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (event) {
+    try {
+      const loaded = JSON.parse(event.target.result);
+      ideas = loaded.map(idea => ({
+        ...idea,
+        font: idea.font || fonts[0],
+        radius: idea.radius || 80
+      }));
+
+      // Delay movement after loading
+      movementDelayActive = true;
+      setTimeout(() => {
+        movementDelayActive = false;
+      }, 10000);
+    } catch (err) {
+      alert("Invalid JSON file.");
+    }
+  };
+  reader.readAsText(file);
+});
 
     document.getElementById("bgLoader").addEventListener("change", function (e) {
       const file = e.target.files[0];
