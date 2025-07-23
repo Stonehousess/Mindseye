@@ -89,7 +89,7 @@
         <input type="text" id="youtubeLink" placeholder="Paste Video URL" style="width:180px;" />
         <button onclick="loadYouTubeVideo()">Load</button>
       </label>
-      <button onclick="clearBackground()" style="margin-left:10px;">Clear BG</button>
+      <button onclick="deleteAllIdeas()" style="margin-left:10px;">Delete All Ideas</button>
     </div>
   </div>
 
@@ -378,6 +378,28 @@ let isDragging = false;
       document.getElementById("ytFrame").style.display = "none";
       document.getElementById("ytFrame").src = "";
     }
+    function deleteAllIdeas() {
+  if (confirm("Are you sure you want to delete all ideas and reset the background?")) {
+    // Clear all ideas
+    ideas = [];
+    selectedIdea = null;
+    panel.style.display = "none";
+
+    // Reset background image
+    backgroundImage = null;
+
+    // Reset video
+    const video = document.getElementById("bgVideo");
+    video.style.display = "none";
+    video.pause();
+    video.src = "";
+
+    // Reset YouTube iframe
+    const iframe = document.getElementById("ytFrame");
+    iframe.style.display = "none";
+    iframe.src = "";
+  }
+}
 
     // Initial Ideas
     ideas = [
