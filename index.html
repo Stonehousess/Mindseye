@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <title>💭MindsEye💬~Ideas</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/>
+<title>💭MindsEye💬~Ideas</title>
+<style>
     html, body {
       margin: 0;
       padding: 0;
@@ -70,64 +71,128 @@
     display: none; /* default hidden, shown when video is loaded */
 }
   </style>
+<style>
+#bottomToolbar {
+  display: none;
+}
+#bottomToolbar.visible {
+  display: flex !important;
+}
+</style>
+<style>
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .bubble img {
+    position: absolute;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    object-fit: cover;
+    z-index: 0;
+  }
+  .bubble span {
+    position: relative;
+    z-index: 1;
+  }
+  .glow {
+    box-shadow: 0 0 20px 5px white;
+  }
+  .flash {
+    animation: flash 0.5s infinite alternate;
+  }
+  @keyframes flash {
+    from { opacity: 1; }
+    to { opacity: 0.5; }
+  }
+  .animate-colors {
+    animation: colorCycle 5s infinite linear;
+  }
+  @keyframes colorCycle {
+    0% { background-color: red; }
+    25% { background-color: yellow; }
+    50% { background-color: green; }
+    75% { background-color: blue; }
+    100% { background-color: red; }
+  }
+  .transparent {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+</style>
 </head>
 <body>
-  <div id="toolbar">
-    <div><strong>💭MindsEye💬~Ideas-Incidents-Events-Concerns-Logger😎JSON</strong></div>
-    <div>
-      <button onclick="saveIdeas()">💾Save.json</button>
-      <input type="file" id="fileLoader" accept=".json" style="display:none" />
-      <button onclick="document.getElementById('fileLoader').click()">🆙Load.json</button>
-      <label style="margin-left: 10px;">⚡️Speed:🚥
-        <input type="range" min="0.0" max="3" step="0.1" value="1" onchange="speedMultiplier = parseFloat(this.value)">
-      </label>
-      <label style="margin-left: 10px;">Image:
-        <input type="file" id="bgLoader" accept="image/*" />
-      </label>
-      <label style="margin-left: 10px;">Video File:
-        <input type="file" id="videoLoader" accept="video/*" />
-      </label>
-      <label style="margin-left: 10px;">Video Link:
-        <input type="text" id="youtubeLink" placeholder="Paste Video URL" style="width:180px;" />
-        <button onclick="loadYouTubeVideo()">Load</button>
-      </label>
-      
-      <label style="margin-left: 10px;">🎨 Style:
+<div id="bubblePanel" style="position:fixed;top:10px;right:10px;background:rgba(0,0,0,0.6);color:white;padding:10px;border-radius:8px;z-index:1000;">
+<label for="bubbleImage">Upload Image:</label>
+<input accept="image/png, image/jpeg, image/gif" id="bubbleImage" type="file"/><br/>
+<label for="styleSelect">Style:</label>
+<select id="styleSelect">
+<option value="">None</option>
+<option value="glow">Glow</option>
+<option value="animate-colors">Animate Colors</option>
+<option value="flash">Flash</option>
+<option value="transparent">Transparent</option>
+</select>
+</div>
+<div id="toolbar"><button onclick="togglePlaybackToolbar()">🎛️</button><button onclick="location.reload()">🔁</button>
+<div><strong>💭MindsEye💬~Ideas-Incidents-Events-Concerns-Logger😎JSON</strong></div>
+<div>
+<button onclick="saveIdeas()">💾Save.json</button>
+<input accept=".json" id="fileLoader" style="display:none" type="file"/>
+<button onclick="document.getElementById('fileLoader').click()">🆙Load.json</button>
+<label style="margin-left: 10px;">⚡️Speed:🚥
+        <input max="3" min="0.0" onchange="speedMultiplier = parseFloat(this.value)" step="0.1" type="range" value="1">
+</input></label>
+<label style="margin-left: 10px;">Image:
+        <input accept="image/*" id="bgLoader" type="file"/>
+</label>
+<label style="margin-left: 10px;">Video File:
+        <input accept="video/*" id="videoLoader" type="file"/>
+</label>
+<label style="margin-left: 10px;">Video Link:
+        <input id="youtubeLink" placeholder="Paste Video URL" style="width:180px;" type="text"/>
+<button onclick="loadYouTubeVideo()">Load</button>
+</label>
+<label style="margin-left: 10px;">🎨 Style:
         <select id="themeSelector" onchange="switchTheme(this.value)">
-          <option value="default">Default</option>
-          <option value="cqc">CQC</option>
-          <option value="argyle">Argyle</option>
-          <option value="blank">Blank</option>
-          <option value="lakers">Lakers</option>
-        </select>
-      </label>
-      <button onclick="cycleBackground()" style="margin-left:10px;">🔄 Cycle 🖼️</button>
-
-      <button onclick="deleteAllIdeas()" style="margin-left:10px;">🚮Delete 💭 Ideas🗑️</button>
-    </div>
-  </div>
-
- <video id="bgVideo" autoplay muted loop playsinline style="position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; z-index:-2; display:none; pointer-events: none;"></video>
-  <iframe id="ytFrame" frameborder="0" allow="autoplay" allowfullscreen style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-3; display:none;"></iframe>
-  <canvas id="canvas"></canvas>
-
-  <div class="panel" id="panel">
-    <input id="title" placeholder="Title" />
-    <textarea id="description" rows="5" placeholder="Description"></textarea>
-    <label>Size:
-      <input type="range" id="sizeSlider" min="10" max="100" value="80" oninput="selectedIdea.radius = parseInt(this.value)">
-    </label>
-    <div style="margin-top: 10px;">
-      <button onclick="savePanel()">Save</button>
-      <button onclick="changeColor()">💭️Color</button>
-      <button onclick="changeTextColor()">💬Color</button>
-      <button onclick="cycleFont()">Font</button>
-      <button onclick="deleteIdea()">Delete</button>
-      <button onclick="closePanel()">Close</button>
-    </div>
-  </div>
-
-  <script>
+<option value="default">Default</option>
+<option value="cqc">CQC</option>
+<option value="argyle">Argyle</option>
+<option value="blank">Blank</option>
+<option value="lakers">Lakers</option>
+</select>
+</label>
+<button onclick="cycleBackground()" style="margin-left:10px;">🔄 Cycle 🖼️</button>
+<button onclick="deleteAllIdeas()" style="margin-left:10px;">🚮Delete 💭 Ideas🗑️</button>
+</div>
+</div>
+<video autoplay="" id="bgVideo" loop="" muted="" playsinline="" style="position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; z-index:-2; display:none; pointer-events: none;"></video>
+<iframe allow="autoplay" allowfullscreen="" frameborder="0" id="ytFrame" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-3; display:none;"></iframe>
+<canvas id="canvas"></canvas>
+<div class="panel" id="panel">
+<input id="title" placeholder="Title"/>
+<textarea id="description" placeholder="Description" rows="5"></textarea>
+<label>Size:
+      <input id="sizeSlider" max="100" min="10" oninput="selectedIdea.radius = parseInt(this.value)" type="range" value="80"/>
+</label>
+<div style="margin-top: 10px;">
+<button onclick="savePanel()">Save</button>
+<button onclick="changeColor()">💭️Color</button>
+<button onclick="changeTextColor()">💬Color</button>
+<button onclick="cycleFont()">Font</button>
+<button onclick="deleteIdea()">Delete</button>
+<button onclick="closePanel()">Close</button>
+</div>
+</div>
+<script>
     let movementDelayActive = true;
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -1025,6 +1090,125 @@ function gamepadLoop() {
   }
 
   gamepadLoopId = requestAnimationFrame(gamepadLoop);
+}
+
+
+
+let recordedStates = { start: [], end: [] };
+let isPlaying = false;
+let isFrozen = false;
+let playbackT = 0;
+
+function deepCopyIdeas() {
+  return ideas.map(i => ({ ...i }));
+}
+
+function recordState(type) {
+  recordedStates[type] = deepCopyIdeas();
+  console.log(`State '${type}' recorded.`);
+  if (type === 'start') isFrozen = true;
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function applyPlayback(t) {
+  if (!recordedStates.start.length || !recordedStates.end.length) return;
+
+  let start = recordedStates.start;
+  let end = recordedStates.end;
+
+  ideas = start.map((s, i) => {
+    const e = end[i] || s;
+    return {
+      ...s,
+      x: lerp(s.x, e.x, t),
+      y: lerp(s.y, e.y, t),
+      radius: lerp(s.radius, e.radius, t),
+      color: s.color,
+      textColor: s.textColor,
+      font: s.font,
+      title: s.title,
+      description: s.description,
+    };
+  });
+}
+
+function startPlayback() {
+  if (!recordedStates.start.length || !recordedStates.end.length) return;
+  const duration = parseInt(document.getElementById('playbackDuration').value) || 10000;
+  const startTime = performance.now();
+  isPlaying = true;
+
+  function stepPlayback(now) {
+    let t = Math.min((now - startTime) / duration, 1);
+    playbackT = t;
+    applyPlayback(t);
+    document.getElementById('playbackSlider').value = t;
+    if (t < 1 && isPlaying) {
+      requestAnimationFrame(stepPlayback);
+    } else {
+      isPlaying = false;
+    }
+  }
+
+  requestAnimationFrame(stepPlayback);
+}
+
+document.getElementById('playbackSlider').addEventListener('input', (e) => {
+  isPlaying = false;
+  const t = parseFloat(e.target.value);
+  playbackT = t;
+  applyPlayback(t);
+});
+
+
+function togglePlaybackToolbar() {
+  const toolbar = document.getElementById('bottomToolbar');
+  toolbar.classList.toggle("visible");
+}
+</script>
+<div id="bottomToolbar" style="
+  position: fixed; bottom: 0; width: 100%; background: #111; color: white;
+  display: flex; justify-content: center; align-items: center; padding: 10px; z-index: 1000; display: none;">
+<button onclick="recordState('start')">📌 Mark Start</button>
+<button onclick="recordState('end')">📍 Mark End</button>
+<button onclick="startPlayback()">▶️ Play</button>
+<input id="playbackSlider" max="1" min="0" step="0.01" style="margin-left: 10px; width: 200px;" type="range" value="0"/>
+<select id="playbackDuration" style="margin-left: 10px;">
+<option value="5000">5s</option>
+<option selected="" value="10000">10s</option>
+<option value="15000">15s</option>
+<option value="20000">20s</option>
+<option value="30000">30s</option>
+</select>
+<button onclick="captureCanvas()">📷 Snapshot</button>
+</div>
+<script>
+const imageInput = document.getElementById('bubbleImage');
+const styleSelect = document.getElementById('styleSelect');
+
+function applyToBubble(bubble) {
+  const style = styleSelect.value;
+  bubble.className = 'bubble';
+  if (style) bubble.classList.add(style);
+
+  imageInput.onchange = e => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        let img = bubble.querySelector('img');
+        if (!img) {
+          img = document.createElement('img');
+          bubble.appendChild(img);
+        }
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 }
 </script>
 </body>
