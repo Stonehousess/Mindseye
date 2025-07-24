@@ -986,6 +986,46 @@ showToolbar();
       };
       img.src = `${currentTheme}${backgroundIndex}.png`;
     }
+    let gamepadIndex = null;
+let gamepadActive = false;
+let gamepadLoopId = null;
+
+window.addEventListener("gamepadconnected", (e) => {
+  gamepadIndex = e.gamepad.index;
+  gamepadActive = true;
+  console.log("🎮 Gamepad connected");
+  gamepadLoop();
+});
+
+window.addEventListener("gamepaddisconnected", () => {
+  gamepadActive = false;
+  console.log("❌ Gamepad disconnected");
+  cancelAnimationFrame(gamepadLoopId);
+});
+
+function gamepadLoop() {
+  const gp = navigator.getGamepads()[gamepadIndex];
+  if (!gp) return;
+
+  // Select next idea with Button A (index 0)
+  if (gp.buttons[0].pressed && ideas.length > 0) {
+    const currentIndex = selectedIdea ? ideas.indexOf(selectedIdea) : -1;
+    const nextIndex = (currentIndex + 1) % ideas.length;
+    selectedIdea = ideas[nextIndex];
+    showPanel();
+  }
+
+  // Move selected idea with left stick (axes 0 and 1)
+  if (selectedIdea && panel.style.display === "none") {
+    const dx = gp.axes[0]; // X-axis
+    const dy = gp.axes[1]; // Y-axis
+    const speed = 5;
+    selectedIdea.x += dx * speed;
+    selectedIdea.y += dy * speed;
+  }
+
+  gamepadLoopId = requestAnimationFrame(gamepadLoop);
+}
 </script>
 </body>
 </html>
