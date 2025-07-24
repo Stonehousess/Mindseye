@@ -149,8 +149,8 @@
 <input accept=".json" id="fileLoader" style="display:none" type="file"/>
 <button onclick="document.getElementById('fileLoader').click()">🆙Load.json</button>
 <label style="margin-left: 10px;">⚡️Speed:🚥
-        <input max="3" min="0.0" onchange="speedMultiplier = parseFloat(this.value)" step="0.1" type="range" value="1">
-</input></label>
+        <input max="3" min="0.0" onchange="speedMultiplier = parseFloat(this.value)" step="0.1" type="range" value="1"/>
+</label>
 <label style="margin-left: 10px;">Image:
         <input accept="image/*" id="bgLoader" type="file"/>
 </label>
@@ -191,8 +191,49 @@
 <button onclick="deleteIdea()">Delete</button>
 <button onclick="closePanel()">Close</button>
 </div>
+<div id="customBubbleOptions" style="margin-top: 10px;">
+<button onclick="uploadImage()">🖼️ Image</button>
+<input accept="image/*" id="imageInput" onchange="handleImageUpload(event)" style="display: none;" type="file"/>
+<select id="styleSelect" onchange="applyBubbleStyle(this.value)">
+<option value="">None</option>
+<option value="glow">Glow</option>
+<option value="animate-colors">Animate Colors</option>
+<option value="flash">Flash</option>
+<option value="transparent">Transparent</option>
+</select>
+<label for="fontSizeRange">Font Size:</label>
+<input id="fontSizeRange" max="48" min="10" onchange="updateFontSize(this.value)" type="range" value="16"/>
 </div>
 <script>
+function uploadImage() {
+  document.getElementById('imageInput').click();
+}
+
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (selectedBubble) {
+      selectedBubble.image = new Image();
+      selectedBubble.image.src = e.target.result;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyBubbleStyle(style) {
+  if (!selectedBubble) return;
+  selectedBubble.customStyle = style;
+}
+
+function updateFontSize(size) {
+  if (selectedBubble) {
+    selectedBubble.fontSize = size;
+    selectedBubble.radius = parseInt(size) + 50;
+  }
+}
+
     let movementDelayActive = true;
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
