@@ -78,7 +78,7 @@
       <button onclick="saveIdeas()">💾Save.json</button>
       <input type="file" id="fileLoader" accept=".json" style="display:none" />
       <button onclick="document.getElementById('fileLoader').click()">🆙Load.json</button>
-      <label style="margin-left: 10px;">⚡️Speed:
+      <label style="margin-left: 10px;">⚡️Speed:🚥
         <input type="range" min="0.0" max="3" step="0.1" value="1" onchange="speedMultiplier = parseFloat(this.value)">
       </label>
       <label style="margin-left: 10px;">Image:
@@ -92,7 +92,7 @@
         <button onclick="loadYouTubeVideo()">Load</button>
       </label>
       
-      <label style="margin-left: 10px;">🎨 Theme:
+      <label style="margin-left: 10px;">🎨 Style:
         <select id="themeSelector" onchange="switchTheme(this.value)">
           <option value="default">Default</option>
           <option value="cqc">CQC</option>
@@ -101,9 +101,9 @@
           <option value="lakers">Lakers</option>
         </select>
       </label>
-      <button onclick="cycleBackground()" style="margin-left:10px;">🔁 Cycle Background</button>
+      <button onclick="cycleBackground()" style="margin-left:10px;">🔄 Cycle 🖼️</button>
 
-      <button onclick="deleteAllIdeas()" style="margin-left:10px;">Delete All Ideas</button>
+      <button onclick="deleteAllIdeas()" style="margin-left:10px;">🚮Delete 💭 Ideas🗑️</button>
     </div>
   </div>
 
@@ -440,7 +440,7 @@ let isDragging = false;
       document.getElementById("ytFrame").src = "";
     }
     function deleteAllIdeas() {
-  if (confirm("CREATE NEW CANVAS? ✅")) {
+  if (confirm("📋CREATE BLANK CANVAS? ✅")) {
     // Clear all ideas
     ideas = [];
     selectedIdea = null;
