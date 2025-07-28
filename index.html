@@ -1,1256 +1,885 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="favicon.ico" rel="icon" type="image/x-icon"/>
-<title>💭MindsEye💬~Ideas</title>
-<style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: black;
-      font-family: sans-serif;
-    }
-    #toolbar {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: #111;
-      opacity: 0.9;
-      color: white;
-      padding: 10px;
-      display: flex;
-      justify-content: space-between;
-      z-index: 1000;
-      transition: opacity 0.5s ease;
-    }
-    #canvas {
-      display: block;
-    }
-    .panel {
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 500px;
-      background: rgba(34, 34, 34, 0.92);
-      color: white;
-      padding: 20px;
-      border-radius: 16px;
-      z-index: 999;
-      display: none;
-    }
-    .panel input, .panel textarea {
-      width: 100%;
-      margin: 5px 0;
-      background: #333;
-      border: none;
-      color: white;
-      padding: 5px;
-    }
-    .panel button {
-      margin-right: 10px;
-      padding: 6px 12px;
-      background: #444;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    #bgVideo {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    z-index: -2;
-    pointer-events: none;
-    display: none; /* default hidden, shown when video is loaded */
-}
-  </style>
-<style>
-#bottomToolbar {
-  display: none;
-}
-#bottomToolbar.visible {
-  display: flex !important;
-}
-</style>
-<style>
-  .bubble {
-    position: absolute;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    text-align: center;
-    padding: 5px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  .bubble img {
-    position: absolute;
-    width: 90%;
-    height: 90%;
-    border-radius: 50%;
-    object-fit: cover;
-    z-index: 0;
-  }
-  .bubble span {
-    position: relative;
-    z-index: 1;
-  }
-  .glow {
-    box-shadow: 0 0 20px 5px white;
-  }
-  .flash {
-    animation: flash 0.5s infinite alternate;
-  }
-  @keyframes flash {
-    from { opacity: 1; }
-    to { opacity: 0.5; }
-  }
-  .animate-colors {
-    animation: colorCycle 5s infinite linear;
-  }
-  @keyframes colorCycle {
-    0% { background-color: red; }
-    25% { background-color: yellow; }
-    50% { background-color: green; }
-    75% { background-color: blue; }
-    100% { background-color: red; }
-  }
-  .transparent {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-</style>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link href="favicon.ico" rel="icon" type="image/x-icon"/>
+    <title>💭MindsEye💬~Ideas</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: black;
+            font-family: sans-serif;
+        }
+        
+        #toolbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #111;
+            opacity: 0.9;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        
+        #canvas {
+            display: block;
+        }
+        
+        .panel {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            background: rgba(34, 34, 34, 0.92);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            z-index: 999;
+            display: none;
+        }
+        
+        .panel input, .panel textarea {
+            width: 100%;
+            margin: 5px 0;
+            background: #333;
+            border: none;
+            color: white;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        
+        .panel button {
+            margin-right: 10px;
+            padding: 6px 12px;
+            background: #444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .panel button:hover {
+            background: #555;
+        }
+        
+        #bgVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -2;
+            pointer-events: none;
+            display: none;
+        }
+        
+        #bottomToolbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #111;
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            z-index: 1000;
+        }
+        
+        #bottomToolbar.visible {
+            display: flex !important;
+        }
+        
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-align: center;
+            padding: 5px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .bubble img {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            object-fit: cover;
+            z-index: 0;
+        }
+        
+        .bubble span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .glow {
+            box-shadow: 0 0 20px 5px white;
+        }
+        
+        .flash {
+            animation: flash 0.5s infinite alternate;
+        }
+        
+        @keyframes flash {
+            from { opacity: 1; }
+            to { opacity: 0.5; }
+        }
+        
+        .animate-colors {
+            animation: colorCycle 5s infinite linear;
+        }
+        
+        @keyframes colorCycle {
+            0% { background-color: red; }
+            25% { background-color: yellow; }
+            50% { background-color: green; }
+            75% { background-color: blue; }
+            100% { background-color: red; }
+        }
+        
+        .transparent {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        #bubblePanel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+        
+        #bubblePanel label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        #bubblePanel input[type="file"], #bubblePanel select {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
-<div id="bubblePanel" style="position:fixed;top:10px;right:10px;background:rgba(0,0,0,0.6);color:white;padding:10px;border-radius:8px;z-index:1000;">
-<label for="bubbleImage">Upload Image:</label>
-<input accept="image/png, image/jpeg, image/gif" id="bubbleImage" type="file"/><br/>
-<label for="styleSelect">Style:</label>
-<select id="styleSelect">
-<option value="">None</option>
-<option value="glow">Glow</option>
-<option value="animate-colors">Animate Colors</option>
-<option value="flash">Flash</option>
-<option value="transparent">Transparent</option>
-</select>
-</div>
-<div id="toolbar"><button onclick="togglePlaybackToolbar()">🎛️</button><button onclick="location.reload()">🔁</button>
-<div><strong>💭MindsEye💬~Ideas-Incidents-Events-Concerns-Logger😎JSON</strong></div>
-<div>
-<button onclick="saveIdeas()">💾Save.json</button>
-<input accept=".json" id="fileLoader" style="display:none" type="file"/>
-<button onclick="document.getElementById('fileLoader').click()">🆙Load.json</button>
-<label style="margin-left: 10px;">⚡️Speed:🚥
-        <input max="3" min="0.0" onchange="speedMultiplier = parseFloat(this.value)" step="0.1" type="range" value="1"/>
-</label>
-<label style="margin-left: 10px;">Image:
-        <input accept="image/*" id="bgLoader" type="file"/>
-</label>
-<label style="margin-left: 10px;">Video File:
-        <input accept="video/*" id="videoLoader" type="file"/>
-</label>
-<label style="margin-left: 10px;">Video Link:
-        <input id="youtubeLink" placeholder="Paste Video URL" style="width:180px;" type="text"/>
-<button onclick="loadYouTubeVideo()">Load</button>
-</label>
-<label style="margin-left: 10px;">🎨 Style:
-        <select id="themeSelector" onchange="switchTheme(this.value)">
-<option value="default">Default</option>
-<option value="cqc">CQC</option>
-<option value="argyle">Argyle</option>
-<option value="blank">Blank</option>
-<option value="lakers">Lakers</option>
-</select>
-</label>
-<button onclick="cycleBackground()" style="margin-left:10px;">🔄 Cycle 🖼️</button>
-<button onclick="deleteAllIdeas()" style="margin-left:10px;">🚮Delete 💭 Ideas🗑️</button>
-</div>
-</div>
-<video autoplay="" id="bgVideo" loop="" muted="" playsinline="" style="position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; z-index:-2; display:none; pointer-events: none;"></video>
-<iframe allow="autoplay" allowfullscreen="" frameborder="0" id="ytFrame" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-3; display:none;"></iframe>
-<canvas id="canvas"></canvas>
-<div class="panel" id="panel">
-<input id="title" placeholder="Title"/>
-<textarea id="description" placeholder="Description" rows="5"></textarea>
-<label>Size:
-      <input id="sizeSlider" max="100" min="10" oninput="selectedIdea.radius = parseInt(this.value)" type="range" value="80"/>
-</label>
-<div style="margin-top: 10px;">
-<button onclick="savePanel()">Save</button>
-<button onclick="changeColor()">💭️Color</button>
-<button onclick="changeTextColor()">💬Color</button>
-<button onclick="cycleFont()">Font</button>
-<button onclick="deleteIdea()">Delete</button>
-<button onclick="closePanel()">Close</button>
-</div>
+    <!-- Bubble Customization Panel -->
+    <div id="bubblePanel">
+        <label for="bubbleImage">Upload Image:</label>
+        <input accept="image/png, image/jpeg, image/gif" id="bubbleImage" type="file"/>
+        
+        <label for="styleSelect">Style:</label>
+        <select id="styleSelect">
+            <option value="">None</option>
+            <option value="glow">Glow</option>
+            <option value="animate-colors">Animate Colors</option>
+            <option value="flash">Flash</option>
+            <option value="transparent">Transparent</option>
+        </select>
+        
+        <button onclick="applyBubbleChanges()" style="background: #007acc; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px;">Apply to Selected</button>
+    </div>
 
-<script>
-function uploadImage() {
-  document.getElementById('imageInput').click();
-}
+    <!-- Main Toolbar -->
+    <div id="toolbar">
+        <button onclick="togglePlaybackToolbar()">🎛️</button>
+        <button onclick="location.reload()">🔁</button>
+        
+        <div><strong>💭MindsEye💬~Ideas-Incidents-Events-Concerns-Logger😎JSON</strong></div>
+        
+        <div>
+            <button onclick="saveIdeas()">💾Save.json</button>
+            <input accept=".json" id="fileLoader" style="display:none" type="file"/>
+            <button onclick="document.getElementById('fileLoader').click()">🆙Load.json</button>
+            
+            <label style="margin-left: 10px;">⚡️Speed:🚥
+                <input max="3" min="0.0" onchange="speedMultiplier = parseFloat(this.value)" step="0.1" type="range" value="1"/>
+            </label>
+            
+            <label style="margin-left: 10px;">Image:
+                <input accept="image/*" id="bgLoader" type="file"/>
+            </label>
+            
+            <label style="margin-left: 10px;">Video File:
+                <input accept="video/*" id="videoLoader" type="file"/>
+            </label>
+            
+            <label style="margin-left: 10px;">Video Link:
+                <input id="youtubeLink" placeholder="Paste Video URL" style="width:180px;" type="text"/>
+                <button onclick="loadYouTubeVideo()">Load</button>
+            </label>
+            
+            <label style="margin-left: 10px;">🎨 Style:
+                <select id="themeSelector" onchange="switchTheme(this.value)">
+                    <option value="default">Default</option>
+                    <option value="cqc">CQC</option>
+                    <option value="argyle">Argyle</option>
+                    <option value="blank">Blank</option>
+                    <option value="lakers">Lakers</option>
+                </select>
+            </label>
+            
+            <button onclick="cycleBackground()" style="margin-left:10px;">🔄 Cycle 🖼️</button>
+            <button onclick="deleteAllIdeas()" style="margin-left:10px;">🚮Delete 💭 Ideas🗑️</button>
+        </div>
+    </div>
 
-function handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    if (selectedBubble) {
-      selectedBubble.image = new Image();
-      selectedBubble.image.src = e.target.result;
-    }
-  };
-  reader.readAsDataURL(file);
-}
-
-function applyBubbleStyle(style) {
-  if (!selectedBubble) return;
-  selectedBubble.customStyle = style;
-}
-
-function updateFontSize(size) {
-  if (selectedBubble) {
-    selectedBubble.fontSize = size;
-    selectedBubble.radius = parseInt(size) + 50;
-  }
-}
-</script>
-<div id="customBubbleOptions" style="margin-top: 10px;">
-<button onclick="uploadImage()">🖼️ Image</button>
-<select id="styleSelect">
-<option value="">None</option>
-<option value="glow">Glow</option>
-<option value="animate-colors">Animate Colors</option>
-<option value="flash">Flash</option>
-<option value="transparent">Transparent</option>
-</select>
-</div>
-</div>
-<script>
-    let movementDelayActive = true;
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const panel = document.getElementById("panel");
-    let width, height;
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resize);
-    resize();
-
-    movementDelayActive = true; // Start with movement disabled
-    setTimeout(() => {
-    movementDelayActive = false; // Enable after 10 seconds
- }, 10000); // 10 seconds
-
-const border = 10;
+    <!-- Background Video -->
+    <video autoplay id="bgVideo" loop muted playsinline></video>
     
-    let speedMultiplier = 1;
-    let ideas = [];
-    let selectedIdea = null;
-    let backgroundImage = null;
-    const fonts = [
-  "Arial",
-  "Verdana",
-  "Tahoma",
-  "Trebuchet MS",
-  "Times New Roman",
-  "Georgia",
-  "Garamond",
-  "Courier New",
-  "Lucida Console",
-  "Lucida Sans Unicode",
-  "Palatino Linotype",
-  "Segoe UI",
-  "Segoe Print",
-  "Comic Sans MS",
-  "Impact",
-  "Franklin Gothic Medium",
-  "Century Gothic",
-  "Calibri",
-  "Cambria",
-  "Constantia",
-  "Corbel",
-  "Arial Black",
-  "System-ui",         // Default OS font
-  "Sans-serif",
-  "Serif",
-  "Monospace"
-];
-    let fontIndex = 0;
+    <!-- YouTube iframe -->
+    <iframe allow="autoplay" allowfullscreen frameborder="0" id="ytFrame" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-3; display:none;"></iframe>
+    
+    <!-- Main Canvas -->
+    <canvas id="canvas"></canvas>
+    
+    <!-- Edit Panel -->
+    <div class="panel" id="panel">
+        <input id="title" placeholder="Title"/>
+        <textarea id="description" placeholder="Description" rows="5"></textarea>
+        
+        <label>Size:
+            <input id="sizeSlider" max="100" min="10" oninput="selectedIdea.radius = parseInt(this.value)" type="range" value="80"/>
+        </label>
+        
+        <div style="margin-top: 10px;">
+            <button onclick="savePanel()">Save</button>
+            <button onclick="changeColor()">💭️Color</button>
+            <button onclick="changeTextColor()">💬Color</button>
+            <button onclick="cycleFont()">Font</button>
+            <button onclick="uploadImageForIdea()">🖼️ Image</button>
+            <button onclick="deleteIdea()">Delete</button>
+            <button onclick="closePanel()">Close</button>
+        </div>
+        
+        <!-- Hidden file input for idea images -->
+        <input accept="image/png, image/jpeg, image/gif" id="ideaImageInput" style="display:none" type="file"/>
+    </div>
 
-    function randomColor() {
-      return `hsl(${Math.random() * 360}, 100%, 70%)`;
-    }
-    function randomTextColor() {
-      const colors = ['white', 'black', 'cyan', 'yellow', 'magenta', 'lime', 'red'];
-      return colors[Math.floor(Math.random() * colors.length)];
-    }
-    function addIdea(x, y, title = "New Idea", description = "", color = randomColor(), textColor = "white", radius = 80) {
-      const maxSpeed = 3;
-      ideas.push({ title, description, x, y, vx: (Math.random() * 2 - 1) * maxSpeed, vy: (Math.random() * 2 - 1) * maxSpeed, color, textColor, radius, font: fonts[0] });
-    }
+    <!-- Playback Toolbar -->
+    <div id="bottomToolbar">
+        <button onclick="recordState('start')">📌 Mark Start</button>
+        <button onclick="recordState('end')">📍 Mark End</button>
+        <button onclick="startPlayback()">▶️ Play</button>
+        <input id="playbackSlider" max="1" min="0" step="0.01" style="margin-left: 10px; width: 200px;" type="range" value="0"/>
+        <select id="playbackDuration" style="margin-left: 10px;">
+            <option value="5000">5s</option>
+            <option selected value="10000">10s</option>
+            <option value="15000">15s</option>
+            <option value="20000">20s</option>
+            <option value="30000">30s</option>
+        </select>
+        <button onclick="captureCanvas()">📷 Snapshot</button>
+    </div>
 
-    canvas.addEventListener("click", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      let clicked = false;
-      for (let idea of ideas) {
-        const dx = x - idea.x;
-        const dy = y - idea.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < idea.radius) {
-          selectedIdea = idea;
-          showPanel();
-          clicked = true;
-          break;
+    <script>
+        // Global variables
+        let movementDelayActive = true;
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const panel = document.getElementById("panel");
+        let width, height;
+        let speedMultiplier = 1;
+        let ideas = [];
+        let selectedIdea = null;
+        let backgroundImage = null;
+        let fontIndex = 0;
+        let isDragging = false;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        let dragIdea = null;
+        let mouseMoved = false;
+        
+        // Constants
+        const border = 10;
+        const fonts = [
+            "Arial", "Verdana", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia",
+            "Garamond", "Courier New", "Lucida Console", "Lucida Sans Unicode",
+            "Palatino Linotype", "Segoe UI", "Segoe Print", "Comic Sans MS", "Impact",
+            "Franklin Gothic Medium", "Century Gothic", "Calibri", "Cambria",
+            "Constantia", "Corbel", "Arial Black", "System-ui", "Sans-serif", "Serif", "Monospace"
+        ];
+
+        // Canvas setup
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
         }
-      }
-      if (!clicked) addIdea(x, y);
-    });
+        window.addEventListener("resize", resize);
+        resize();
 
-    function showPanel() {
-      document.getElementById("title").value = selectedIdea.title;
-      document.getElementById("description").value = selectedIdea.description;
-      document.getElementById("sizeSlider").value = selectedIdea.radius || 80;
-      panel.style.display = "block";
-    }
-    function savePanel() {
-      selectedIdea.title = document.getElementById("title").value;
-      selectedIdea.description = document.getElementById("description").value;
-      panel.style.display = "none";
-    }
-    function deleteIdea() {
-      if (selectedIdea) {
-        ideas = ideas.filter(idea => idea !== selectedIdea);
-        selectedIdea = null;
-        panel.style.display = "none";
-      }
-    }
-    function closePanel() { panel.style.display = "none"; }
-    function changeColor() { selectedIdea.color = randomColor(); }
-    function changeTextColor() { selectedIdea.textColor = randomTextColor(); }
-    function cycleFont() {
-      fontIndex = (fontIndex + 1) % fonts.length;
-      selectedIdea.font = fonts[fontIndex];
-    }
+        // Movement delay setup
+        setTimeout(() => {
+            movementDelayActive = false;
+        }, 10000);
 
-    function draw() {
-      if (backgroundImage) ctx.drawImage(backgroundImage, 0, 0, width, height);
-      else ctx.clearRect(0, 0, width, height);
-
-      for (let i = 0; i < ideas.length; i++) {
-        let a = ideas[i];
-        const actualSpeed = movementDelayActive ? 0 : speedMultiplier;
-        a.x += a.vx * actualSpeed;
-        a.y += a.vy * actualSpeed;
-
-        if (a.x - a.radius < border) { a.x = border + a.radius; a.vx *= -1; }
-        if (a.x + a.radius > width - border) { a.x = width - border - a.radius; a.vx *= -1; }
-        if (a.y - a.radius < border + 50) { a.y = border + 50 + a.radius; a.vy *= -1; }
-        if (a.y + a.radius > height - border) { a.y = height - border - a.radius; a.vy *= -1; }
-
-        for (let j = i + 1; j < ideas.length; j++) {
-          let b = ideas[j];
-          let dx = a.x - b.x;
-          let dy = a.y - b.y;
-          let dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < a.radius + b.radius) {
-            let angle = Math.atan2(dy, dx);
-            let tx = a.x - Math.cos(angle) * (a.radius + b.radius);
-            let ty = a.y - Math.sin(angle) * (a.radius + b.radius);
-            b.x = tx;
-            b.y = ty;
-            [a.vx, b.vx] = [b.vx, a.vx];
-            [a.vy, b.vy] = [b.vy, a.vy];
-          }
+        // Utility functions
+        function randomColor() {
+            return `hsl(${Math.random() * 360}, 100%, 70%)`;
         }
 
-        const gradient = ctx.createRadialGradient(a.x, a.y, a.radius * 0.6, a.x, a.y, a.radius);
-        gradient.addColorStop(0, a.color);
-        gradient.addColorStop(1, "black");
-        ctx.beginPath();
-        ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
-        ctx.fillStyle = gradient;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = a.color;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = a.textColor || "white";
-        ctx.font = "bold 14px " + (a.font || "Tahoma");
-        ctx.textAlign = "center";
-        const words = a.title.split(" ");
-        words.forEach((word, idx) => {
-          ctx.fillText(word, a.x, a.y + idx * 16 - (words.length - 1) * 8);
+        function randomTextColor() {
+            const colors = ['white', 'black', 'cyan', 'yellow', 'magenta', 'lime', 'red'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Idea management
+        function addIdea(x, y, title = "New Idea", description = "", color = randomColor(), textColor = "white", radius = 80) {
+            const maxSpeed = 3;
+            ideas.push({
+                title, description, x, y,
+                vx: (Math.random() * 2 - 1) * maxSpeed,
+                vy: (Math.random() * 2 - 1) * maxSpeed,
+                color, textColor, radius,
+                font: fonts[0],
+                image: null,
+                customStyle: ""
+            });
+        }
+
+        // Image upload for individual ideas
+        function uploadImageForIdea() {
+            if (!selectedIdea) return;
+            document.getElementById('ideaImageInput').click();
+        }
+
+        document.getElementById('ideaImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file || !selectedIdea) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    selectedIdea.image = img;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
         });
-      }
-      requestAnimationFrame(draw);
-    }
-    draw();
 
-    function saveIdeas() {
-      const dataToSave = ideas.map(idea => ({ ...idea }));
-      const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "ideas.json";
-      a.click();
-    }
+        // Bubble customization functions
+        function applyBubbleChanges() {
+            if (!selectedIdea) {
+                alert("Please select an idea bubble first!");
+                return;
+            }
 
-    document.getElementById("fileLoader").addEventListener("change", function (e) {
-    const file = e.target.files[0];
-    if (!file) return;
+            // Apply image if uploaded
+            const imageFile = document.getElementById('bubbleImage').files[0];
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        selectedIdea.image = img;
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(imageFile);
+            }
 
-    const reader = new FileReader();
-    reader.onload = function (event) {
-    try {
-      const loaded = JSON.parse(event.target.result);
-      ideas = loaded.map(idea => ({
-        ...idea,
-        font: idea.font || fonts[0],
-        radius: idea.radius || 80
-      }));
+            // Apply style
+            const style = document.getElementById('styleSelect').value;
+            selectedIdea.customStyle = style;
+            
+            alert("Changes applied to selected idea!");
+        }
 
-      // Delay movement after loading
-      movementDelayActive = true;
-      setTimeout(() => {
-        movementDelayActive = false;
-      }, 10000);
-    } catch (err) {
-      alert("Invalid JSON file.");
-    }
-  };
-  reader.readAsText(file);
-});
+        // Canvas event handlers
+        canvas.addEventListener("click", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            let clicked = false;
+            
+            for (let idea of ideas) {
+                const dx = x - idea.x;
+                const dy = y - idea.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < idea.radius) {
+                    selectedIdea = idea;
+                    showPanel();
+                    clicked = true;
+                    break;
+                }
+            }
+            
+            if (!clicked) addIdea(x, y);
+        });
 
-    document.getElementById("bgLoader").addEventListener("change", function (e) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const img = new Image();
-        img.onload = function () {
-          backgroundImage = img;
+        // Mouse drag handlers
+        canvas.addEventListener("mousedown", (e) => {
+            if (speedMultiplier !== 0 || panel.style.display === "block") return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            for (let idea of ideas) {
+                const dx = x - idea.x;
+                const dy = y - idea.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < idea.radius) {
+                    isDragging = true;
+                    dragIdea = idea;
+                    dragOffsetX = dx;
+                    dragOffsetY = dy;
+                    mouseMoved = false;
+                    return;
+                }
+            }
+        });
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (isDragging && dragIdea && speedMultiplier === 0) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                dragIdea.x = x - dragOffsetX;
+                dragIdea.y = y - dragOffsetY;
+                mouseMoved = true;
+            }
+        });
+
+        canvas.addEventListener("mouseup", (e) => {
+            if (isDragging && dragIdea && !mouseMoved) {
+                selectedIdea = dragIdea;
+                showPanel();
+            }
+            isDragging = false;
+            dragIdea = null;
+        });
+
+        // Panel functions
+        function showPanel() {
+            document.getElementById("title").value = selectedIdea.title;
+            document.getElementById("description").value = selectedIdea.description;
+            document.getElementById("sizeSlider").value = selectedIdea.radius || 80;
+            panel.style.display = "block";
+        }
+
+        function savePanel() {
+            selectedIdea.title = document.getElementById("title").value;
+            selectedIdea.description = document.getElementById("description").value;
+            panel.style.display = "none";
+        }
+
+        function deleteIdea() {
+            if (selectedIdea) {
+                ideas = ideas.filter(idea => idea !== selectedIdea);
+                selectedIdea = null;
+                panel.style.display = "none";
+            }
+        }
+
+        function closePanel() {
+            panel.style.display = "none";
+        }
+
+        function changeColor() {
+            if (selectedIdea) selectedIdea.color = randomColor();
+        }
+
+        function changeTextColor() {
+            if (selectedIdea) selectedIdea.textColor = randomTextColor();
+        }
+
+        function cycleFont() {
+            if (selectedIdea) {
+                fontIndex = (fontIndex + 1) % fonts.length;
+                selectedIdea.font = fonts[fontIndex];
+            }
+        }
+
+        // Drawing function
+        function draw() {
+            if (backgroundImage) {
+                ctx.drawImage(backgroundImage, 0, 0, width, height);
+            } else {
+                ctx.clearRect(0, 0, width, height);
+            }
+
+            for (let i = 0; i < ideas.length; i++) {
+                let a = ideas[i];
+                const actualSpeed = movementDelayActive ? 0 : speedMultiplier;
+                a.x += a.vx * actualSpeed;
+                a.y += a.vy * actualSpeed;
+
+                // Boundary collision
+                if (a.x - a.radius < border) { a.x = border + a.radius; a.vx *= -1; }
+                if (a.x + a.radius > width - border) { a.x = width - border - a.radius; a.vx *= -1; }
+                if (a.y - a.radius < border + 50) { a.y = border + 50 + a.radius; a.vy *= -1; }
+                if (a.y + a.radius > height - border) { a.y = height - border - a.radius; a.vy *= -1; }
+
+                // Bubble collision
+                for (let j = i + 1; j < ideas.length; j++) {
+                    let b = ideas[j];
+                    let dx = a.x - b.x;
+                    let dy = a.y - b.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < a.radius + b.radius) {
+                        let angle = Math.atan2(dy, dx);
+                        let tx = a.x - Math.cos(angle) * (a.radius + b.radius);
+                        let ty = a.y - Math.sin(angle) * (a.radius + b.radius);
+                        b.x = tx;
+                        b.y = ty;
+                        [a.vx, b.vx] = [b.vx, a.vx];
+                        [a.vy, b.vy] = [b.vy, a.vy];
+                    }
+                }
+
+                // Draw bubble
+                const gradient = ctx.createRadialGradient(a.x, a.y, a.radius * 0.6, a.x, a.y, a.radius);
+                gradient.addColorStop(0, a.color);
+                gradient.addColorStop(1, "black");
+                
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = a.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Draw image if available
+                if (a.image) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(a.x, a.y, a.radius * 0.8, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(a.image, a.x - a.radius * 0.8, a.y - a.radius * 0.8, a.radius * 1.6, a.radius * 1.6);
+                    ctx.restore();
+                }
+
+                // Draw text
+                ctx.fillStyle = a.textColor || "white";
+                ctx.font = "bold 14px " + (a.font || "Tahoma");
+                ctx.textAlign = "center";
+                const words = a.title.split(" ");
+                words.forEach((word, idx) => {
+                    ctx.fillText(word, a.x, a.y + idx * 16 - (words.length - 1) * 8);
+                });
+            }
+            requestAnimationFrame(draw);
+        }
+
+        // File operations
+        function saveIdeas() {
+            const dataToSave = ideas.map(idea => {
+                const ideaCopy = { ...idea };
+                delete ideaCopy.image; // Can't serialize Image objects
+                return ideaCopy;
+            });
+            const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "ideas.json";
+            a.click();
+        }
+
+        document.getElementById("fileLoader").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                try {
+                    const loaded = JSON.parse(event.target.result);
+                    ideas = loaded.map(idea => ({
+                        ...idea,
+                        font: idea.font || fonts[0],
+                        radius: idea.radius || 80,
+                        image: null // Reset images on load
+                    }));
+
+                    movementDelayActive = true;
+                    setTimeout(() => {
+                        movementDelayActive = false;
+                    }, 10000);
+                } catch (err) {
+                    alert("Invalid JSON file.");
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Background image loader
+        document.getElementById("bgLoader").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const img = new Image();
+                img.onload = function () {
+                    backgroundImage = img;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Video loader
+        document.getElementById("videoLoader").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const video = document.getElementById("bgVideo");
+            const iframe = document.getElementById("ytFrame");
+
+            backgroundImage = null;
+            iframe.style.display = "none";
+            iframe.src = "";
+
+            const objectURL = URL.createObjectURL(file);
+            video.src = objectURL;
+            video.style.display = "block";
+            video.load();
+
+            setTimeout(() => {
+                video.play().then(() => {
+                    console.log("Video playing as background.");
+                }).catch((err) => {
+                    console.warn("Autoplay blocked, trying again on user interaction:", err);
+                    document.body.addEventListener("click", () => video.play(), { once: true });
+                });
+            }, 100);
+        });
+
+        // YouTube video loader
+        function loadYouTubeVideo() {
+            const url = document.getElementById("youtubeLink").value;
+            const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/);
+            const video = document.getElementById("bgVideo");
+            const iframe = document.getElementById("ytFrame");
+            
+            if (match) {
+                const videoId = match[1];
+                const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}`;
+                backgroundImage = null;
+                video.style.display = "none";
+                video.pause();
+                iframe.src = embedUrl;
+                iframe.style.display = "block";
+            } else {
+                alert("Invalid YouTube URL.");
+            }
+        }
+
+        // Delete all ideas
+        function deleteAllIdeas() {
+            if (confirm("📋CREATE BLANK CANVAS? ✅")) {
+                ideas = [];
+                selectedIdea = null;
+                panel.style.display = "none";
+                backgroundImage = null;
+                
+                const video = document.getElementById("bgVideo");
+                video.style.display = "none";
+                video.pause();
+                video.src = "";
+                
+                const iframe = document.getElementById("ytFrame");
+                iframe.style.display = "none";
+                iframe.src = "";
+            }
+        }
+
+        // Toolbar auto-hide
+        let toolbar = document.getElementById('toolbar');
+        let inactivityTimeout;
+
+        function showToolbar() {
+            toolbar.style.opacity = "1";
+            clearTimeout(inactivityTimeout);
+            inactivityTimeout = setTimeout(() => {
+                toolbar.style.opacity = "0";
+            }, 5000);
+        }
+
+        document.addEventListener("mousemove", showToolbar);
+        showToolbar();
+
+        // Theme system
+        let currentTheme = "default";
+        let backgroundIndex = 1;
+
+        const themePresets = {
+            default: {
+                ideas: [...ideas],
+                bg: "default1.png"
+            },
+            cqc: {
+                ideas: [
+                    { title: "CQC Alert", description: "Inspection Report Due", x: 400, y: 300, vx: 1, vy: 1, color: "orange", textColor: "white", radius: 80, font: fonts[0] }
+                ],
+                bg: "cqc1.png"
+            },
+            blank: {
+                ideas: [],
+                bg: "blank1.png"
+            }
         };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
 
-   document.getElementById("videoLoader").addEventListener("change", function (e) {
-  const file = e.target.files[0];
-  if (!file) return;
+        function switchTheme(themeName) {
+            currentTheme = themeName;
+            backgroundIndex = 1;
+            const theme = themePresets[themeName];
+            if (!theme) return;
+            
+            ideas = theme.ideas.map(idea => ({
+                ...idea,
+                font: idea.font || fonts[0],
+                radius: idea.radius || 80,
+                image: null
+            }));
 
-  const video = document.getElementById("bgVideo");
-  const iframe = document.getElementById("ytFrame");
-
-  backgroundImage = null;
-  iframe.style.display = "none";
-  iframe.src = "";
-
-  const objectURL = URL.createObjectURL(file); // ⬅️ Better than FileReader for video
-  video.src = objectURL;
-  video.style.display = "block";
-
-  // Force video to reload and play after src set
-  video.src = objectURL;
-  video.style.display = "block";
-
-  video.load();
-
-  setTimeout(() => {
-  video.play().then(() => {
-    console.log("Video playing as background.");
-  }).catch((err) => {
-    console.warn("Autoplay blocked, trying again on user interaction:", err);
-    document.body.addEventListener("click", () => video.play(), { once: true });
-  });
-}, 100);
-});
-let isDragging = false;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
-    let dragIdea = null;
-    let mouseMoved = false;
-
-    canvas.addEventListener("mousedown", (e) => {
-      if (speedMultiplier !== 0 || panel.style.display === "block") return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      for (let idea of ideas) {
-        const dx = x - idea.x;
-        const dy = y - idea.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < idea.radius) {
-          isDragging = true;
-          dragIdea = idea;
-          dragOffsetX = dx;
-          dragOffsetY = dy;
-          mouseMoved = false;
-          return;
+            const img = new Image();
+            img.onload = function () {
+                backgroundImage = img;
+            };
+            img.src = `${themeName}1.png`;
         }
-      }
-    });
 
-    canvas.addEventListener("mousemove", (e) => {
-      if (isDragging && dragIdea && speedMultiplier === 0) {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        dragIdea.x = x - dragOffsetX;
-        dragIdea.y = y - dragOffsetY;
-        mouseMoved = true;
-      }
-    });
-
-    canvas.addEventListener("mouseup", (e) => {
-      if (isDragging && dragIdea && !mouseMoved) {
-        selectedIdea = dragIdea;
-        showPanel();
-      }
-      isDragging = false;
-      dragIdea = null;
-    });
-    function loadYouTubeVideo() {
-      const url = document.getElementById("youtubeLink").value;
-      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/);
-      const video = document.getElementById("bgVideo");
-      const iframe = document.getElementById("ytFrame");
-      if (match) {
-        const videoId = match[1];
-        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}`;
-        backgroundImage = null;
-        video.style.display = "none";
-        video.pause();
-        iframe.src = embedUrl;
-        iframe.style.display = "block";
-      } else {
-        alert("Invalid YouTube URL.");
-      }
-    }
-
-    function clearBackground() {
-      backgroundImage = null;
-      document.getElementById("bgVideo").style.display = "none";
-      document.getElementById("bgVideo").pause();
-      document.getElementById("ytFrame").style.display = "none";
-      document.getElementById("ytFrame").src = "";
-    }
-    function deleteAllIdeas() {
-  if (confirm("📋CREATE BLANK CANVAS? ✅")) {
-    // Clear all ideas
-    ideas = [];
-    selectedIdea = null;
-    panel.style.display = "none";
-
-    // Reset background image
-    backgroundImage = null;
-
-    // Reset video
-    const video = document.getElementById("bgVideo");
-    video.style.display = "none";
-    video.pause();
-    video.src = "";
-
-    // Reset YouTube iframe
-    const iframe = document.getElementById("ytFrame");
-    iframe.style.display = "none";
-    iframe.src = "";
-  }
-}
-
-    // Initial Ideas
-    ideas = [
-  {
-    "title": "🪦 Tavistock Barrett Scott TP",
-    "description": "The most ambitious concept",
-    "x": 706.1734609726234,
-    "y": 184.85199372103693,
-    "vx": -1.2968878587819401,
-    "vy": 0.5634143789037496,
-    "color": "hsl(288.68169853859274, 100%, 70%)",
-    "textColor": "red",
-    "font": "Impact",
-    "radius": 80
-  },
-  {
-    "title": "GMC",
-    "description": "Avatar morning show",
-    "x": 1231.9742566166797,
-    "y": 433.0235345126275,
-    "vx": 1.0116757948596804,
-    "vy": 1.4047083045416318,
-    "color": "hsl(221.79839347288612, 100%, 70%)",
-    "textColor": "white",
-    "font": "Tahoma",
-    "radius": 80
-  },
-  {
-    "title": "NMC 🤕",
-    "description": "Extreme transitional tale",
-    "x": 658.169483747243,
-    "y": 433.615101969423,
-    "vx": 1.4522053721903179,
-    "vy": -1.3273456957139582,
-    "color": "hsl(341.93125205782036, 100%, 70%)",
-    "textColor": "white",
-    "font": "Comic Sans MS",
-    "radius": 80
-  },
-  {
-    "title": "Pierette Les Furis",
-    "description": "Stylised femme thriller",
-    "x": 97.6449744560183,
-    "y": 437.4424645279449,
-    "vx": 0.3136088934811426,
-    "vy": -1.4731532248789696,
-    "color": "hsl(58.90650649399388, 100%, 70%)",
-    "textColor": "white",
-    "font": "Tahoma",
-    "radius": 80
-  },
-  {
-    "title": "Laurels",
-    "description": "Sound Meadre",
-    "x": 1177.6585603498966,
-    "y": 732.9098491672386,
-    "vx": -2.523019112670083,
-    "vy": 1.5196220664178155,
-    "color": "hsl(44.443789318991875, 100%, 70%)",
-    "textColor": "black",
-    "font": "Arial Black",
-    "radius": 56
-  },
-  {
-    "title": "M MAYA A",
-    "description": "Darkly comic documentary",
-    "x": 936.4285979219108,
-    "y": 432.59278104028124,
-    "vx": -1.3619043734167158,
-    "vy": 0.4598166983792207,
-    "color": "hsl(347.1685063649594, 100%, 70%)",
-    "textColor": "black",
-    "font": "Courier New",
-    "radius": 100
-  },
-  {
-    "title": "HCPC",
-    "description": "A Tokyo Love Story",
-    "x": 930.9577364403626,
-    "y": 165.87834990414956,
-    "vx": 0.9753771655049137,
-    "vy": -1.3591255556663346,
-    "color": "hsl(235.83606410576473, 100%, 70%)",
-    "textColor": "white",
-    "font": "Tahoma",
-    "radius": 85
-  },
-  {
-    "title": "ICO",
-    "description": "A Real Mocumentary",
-    "x": 490.93461193133135,
-    "y": 697.1269485511721,
-    "vx": 0.15299489221280693,
-    "vy": -0.2609199311423531,
-    "color": "hsl(202.08736236759734, 100%, 70%)",
-    "textColor": "black",
-    "font": "Tahoma",
-    "radius": 80
-  },
-  {
-    "title": "PSA",
-    "description": "Other Stuff",
-    "x": 1216.3499424671215,
-    "y": 197.13365597667325,
-    "vx": -0.9874945947125119,
-    "vy": 0.4530852251686194,
-    "color": "hsl(93.46709487028556, 100%, 70%)",
-    "textColor": "yellow",
-    "font": "Verdana",
-    "radius": 80
-  },
-  {
-    "title": "🚨 DC's Finest",
-    "description": "",
-    "x": 1554.3587091058648,
-    "y": 185.58991834543187,
-    "vx": 0.5298495896168878,
-    "vy": -0.8834211054488699,
-    "color": "hsl(163.28132788518116, 100%, 70%)",
-    "textColor": "black",
-    "font": "Tahoma",
-    "radius": 80
-  },
-  {
-    "title": "Devon ICB",
-    "description": "Martyn\nMegan Barrett",
-    "x": 451.30662123292547,
-    "y": 165,
-    "vx": -0.2225940523389871,
-    "vy": -0.3815440731109667,
-    "color": "hsl(126.65216002319512, 100%, 70%)",
-    "textColor": "white",
-    "font": "Arial",
-    "radius": 80
-  },
-  {
-    "title": "🎓Plymouth University 😒",
-    "description": "Matthew Jackson Offer",
-    "x": 127.06597595192437,
-    "y": 745.1941100286599,
-    "vx": 1.1106948136441142,
-    "vy": 0.3684562324631253,
-    "color": "hsl(120.9579546298579, 100%, 70%)",
-    "textColor": "white",
-    "font": "Georgia",
-    "radius": 58
-  },
-  {
-    "title": "CQC",
-    "description": "",
-    "x": 394.45605803519265,
-    "y": 439.91404888817584,
-    "vx": 0.1554876515310718,
-    "vy": 1.2153548146281503,
-    "color": "hsl(71.81547543738424, 100%, 70%)",
-    "textColor": "cyan",
-    "font": "Tahoma",
-    "radius": 80
-  },
-  {
-    "title": "🏩 OIA/HE 🫠",
-    "description": "",
-    "x": 1586.2264105155846,
-    "y": 751.4391660798215,
-    "vx": -0.20905909875189754,
-    "vy": -0.6546841563543974,
-    "color": "hsl(184.99462338958352, 100%, 70%)",
-    "textColor": "magenta",
-    "font": "Arial",
-    "radius": 50
-  },
-  {
-    "title": "🏥 UHP Derriford",
-    "description": "",
-    "x": 1619.777923379092,
-    "y": 448.1658865346691,
-    "vx": 1.075639273695691,
-    "vy": 0.1728395061938286,
-    "color": "hsl(213.9107633084388, 100%, 70%)",
-    "textColor": "white",
-    "font": "Tahoma",
-    "radius": 80
-  },
-  {
-    "title": "Live West 💊",
-    "description": "",
-    "x": 744.5321562420929,
-    "y": 743,
-    "vx": 1.8271391335020648,
-    "vy": 0.48699823419904487,
-    "color": "hsl(351.29880506066866, 100%, 70%)",
-    "textColor": "yellow",
-    "font": "Century Gothic",
-    "radius": 60
-  },
-  {
-    "title": "🫥 SRA 😂",
-    "description": "",
-    "x": 945.077077694988,
-    "y": 692.2639812643661,
-    "vx": -0.24183313706594123,
-    "vy": -0.6179932269015661,
-    "color": "hsl(354.60776932596224, 100%, 70%)",
-    "textColor": "white",
-    "font": "Verdana",
-    "radius": 80
-  },
-  {
-    "title": "Fam 😌",
-    "description": "",
-    "x": 90,
-    "y": 144,
-    "vx": 0.6446175471755509,
-    "vy": -1.2549786293557599,
-    "color": "hsl(310.5551806404761, 100%, 70%)",
-    "textColor": "white",
-    "font": "Monospace",
-    "radius": 80
-  },
-  {
-    "title": "Trevi Plymouth 😥 22|07|25",
-    "description": "Trevi Plymouth – 27 July 2025\nInitially informed Maya she could not be supported as “this is a women’s only centre.” The staff member later apologized multiple times after realizing Maya is a transsexual woman. There was also a damaging suggestion that being transgender may indicate mental illness. However, following discussion, the individual became highly receptive, expressed sincere regret, and listened to proposed changes — including ways to reshape aspects of the service to avoid future discrimination.",
-    "x": 1489.36688811255,
-    "y": 694.2191002099823,
-    "vx": -1.8640882056053802,
-    "vy": 1.0001195529086992,
-    "color": "hsl(262.9390628610484, 100%, 70%)",
-    "textColor": "lime",
-    "radius": 59,
-    "font": "Arial Black"
-  },
-  {
-    "title": "Cox Breach Escalation 🙄 22|7",
-    "description": "Formal Data Breach Escalation to NHS Devon – Ed Cox Letter Misaddressed Again\n\nDate: 22 July 2025\n\nSummary:\nSent formal escalation email to NHS Devon Caldicott Guardian (Rafael Sorribas) regarding a serious repeat data breach committed by Ed Cox (Interim Director of Nursing and Quality). The letter, which contained false claims and sensitive information (gender identity, safeguarding disclosures, mental health), was sent to the same incorrect address previously acknowledged as a breach in June 2025.\n\nKey Points in Email:\n\t•\tEd Cox’s actions constituted a deliberate second breach, with apparent retaliatory intent.\n\t•\tRequested formal investigation, confirmation of restrictions on Ed Cox’s access, and full disclosure of who approved the correspondence.\n\t•\tNamed Penny Smith (CNO) and Martyn Nicholl (Patient Experience) as potentially involved.\n\t•\tReiterated prior restriction on PALS/Experience Team processing data.\n\t•\tCited Article 82 UK GDPR and warned of Pre-Action Protocol if not addressed within 7 days.\n\t•\tNoted that no action has been taken regarding sexual assault disclosures or safeguarding failures.\n\nDeadline: 7-day formal response requested by 29 July 2025.\n\nStatus: Awaiting acknowledgment and formal response from NHS Devon.\n\nSupporting Evidence:\n\t•\tEmail copy sent 22 July 2025\n\t•\tPrevious breach acknowledgment (RS/SIRO/062025-01)\n\t•\tRecordings and documentation confirming all claims",
-    "x": 1600.0275571088973,
-    "y": 596.2564835342811,
-    "vx": -0.04547923604375792,
-    "vy": 1.317205217641886,
-    "color": "hsl(323.0059989366008, 100%, 70%)",
-    "textColor": "white",
-    "radius": 49,
-    "font": "Arial"
-  }
-]
-let toolbar = document.getElementById('toolbar');
-let inactivityTimeout;
-
-function showToolbar() {
-  toolbar.style.opacity = "1";
-  clearTimeout(inactivityTimeout);
-  inactivityTimeout = setTimeout(() => {
-    toolbar.style.opacity = "0";
-  }, 5000); // 5 seconds
-}
-
-// Show on any mouse movement
-document.addEventListener("mousemove", showToolbar);
-
-// Initially call it so toolbar hides after 5s
-showToolbar();
-  
-    let currentTheme = "default";
-    let backgroundIndex = 1;
-
-    const themePresets = {
-      default: {
-        ideas: [...ideas],
-        bg: "default1.png"
-      },
-      cqc: {
-        ideas: [
-          { title: "CQC Alert", description: "Inspection Report Due", x: 400, y: 300, vx: 1, vy: 1, color: "orange", textColor: "white", radius: 80, font: fonts[0] }
-        ],
-        bg: "cqc1.png"
-      },
-      argyle: {
-        ideas: [
-  {
-    "title": "12. JANNERS",
-    "description": "3-1 at Home Park",
-    "x": 1391.856314903699,
-    "y": 177.06633593745963,
-    "vx": -2.5038823180659646,
-    "vy": 2.706633593745956,
-    "color": "green",
-    "textColor": "black",
-    "radius": 90,
-    "font": "Arial"
-  },
-  {
-    "title": "25. Issaka",
-    "description": "",
-    "x": 1001.7072020175659,
-    "y": 172.11246776368944,
-    "vx": -2.727582905818548,
-    "vy": -2.020265480956251,
-    "color": "hsl(169.5204249808646, 100%, 70%)",
-    "textColor": "white",
-    "radius": 77,
-    "font": "Arial"
-  },
-  {
-    "title": "29. Sorinola",
-    "description": "",
-    "x": 295.728914264473,
-    "y": 745.489494424452,
-    "vx": -1.882214795057802,
-    "vy": -2.070210111510945,
-    "color": "hsl(106.0048409709453, 100%, 70%)",
-    "textColor": "white",
-    "radius": 75,
-    "font": "Arial"
-  },
-  {
-    "title": " ⚽️",
-    "description": "",
-    "x": 444.9334989334114,
-    "y": 484.8757662406365,
-    "vx": 1.8414992163861779,
-    "vy": 0.5470138346575946,
-    "color": "hsl(48.31530974209575, 100%, 70%)",
-    "textColor": "white",
-    "radius": 31,
-    "font": "Arial"
-  },
-  {
-    "title": "4. Wiredu",
-    "description": "",
-    "x": 1691.44188388625,
-    "y": 622.2627979880227,
-    "vx": -1.4314693203590225,
-    "vy": -2.0794291091997867,
-    "color": "hsl(252.82353685903811, 100%, 70%)",
-    "textColor": "white",
-    "radius": 80,
-    "font": "Arial"
-  },
-  {
-    "title": "5. Pleguezuelo",
-    "description": "",
-    "x": 1030.7015495020612,
-    "y": 830.2880052100436,
-    "vx": 0.3717351090427048,
-    "vy": 0.1629779671736873,
-    "color": "hsl(146.91765164925442, 100%, 70%)",
-    "textColor": "white",
-    "radius": 80,
-    "font": "Arial"
-  },
-  {
-    "title": "2. Mumba",
-    "description": "",
-    "x": 117.1622360960306,
-    "y": 639.3055166447512,
-    "vx": -2.897184152429392,
-    "vy": 2.241689214399569,
-    "color": "hsl(96.72915377921444, 100%, 70%)",
-    "textColor": "white",
-    "radius": 80,
-    "font": "Arial"
-  },
-  {
-    "title": "10. Amaechi",
-    "description": "",
-    "x": 334.48257036538143,
-    "y": 338.5153758906854,
-    "vx": -2.445240657124471,
-    "vy": -1.719463475880166,
-    "color": "hsl(252.34171552918932, 100%, 70%)",
-    "textColor": "white",
-    "radius": 75,
-    "font": "Arial"
-  },
-  {
-    "title": "22. Galloway",
-    "description": "",
-    "x": 836.60198555199,
-    "y": 838.1462271904525,
-    "vx": 1.6989220135694567,
-    "vy": 0.2812933931466559,
-    "color": "hsl(89.83617564464495, 100%, 70%)",
-    "textColor": "white",
-    "radius": 78,
-    "font": "Arial"
-  },
-  {
-    "title": "1. Hazard ⚡️",
-    "description": "",
-    "x": 1474.8038170600425,
-    "y": 719.989421915724,
-    "vx": 0.6616969681492546,
-    "vy": -2.9752644521069236,
-    "color": "hsl(24.307170121348456, 100%, 70%)",
-    "textColor": "white",
-    "radius": 92,
-    "font": "Arial"
-  },
-  {
-    "title": "17. Watts",
-    "description": "",
-    "x": 1244.604400909622,
-    "y": 699.4715680331566,
-    "vx": 1.649079753654305,
-    "vy": 2.8256139799654356,
-    "color": "hsl(351.41143663281053, 100%, 70%)",
-    "textColor": "white",
-    "radius": 80,
-    "font": "Arial"
-  },
-  {
-    "title": " 🌓",
-    "description": "",
-    "x": 861.0884209381303,
-    "y": 470.8045071055674,
-    "vx": 1,
-    "vy": 1,
-    "color": "hsl(66.39945239408976, 100%, 70%)",
-    "textColor": "white",
-    "radius": 37,
-    "font": "Arial"
-  },
-  {
-    "title": "07. Paterson",
-    "description": "",
-    "x": 637.4503089736904,
-    "y": 322.5942646770523,
-    "vx": 1.1525288168916539,
-    "vy": 0.8009637309900604,
-    "color": "hsl(204.05950274274593, 100%, 70%)",
-    "textColor": "white",
-    "radius": 75,
-    "font": "Arial"
-  },
-  {
-    "title": "8. Edwards",
-    "description": "",
-    "x": 1584.5921140932087,
-    "y": 345.745099895933,
-    "vx": 0.04781406502333674,
-    "vy": -0.899827126407998,
-    "color": "hsl(112.74450176357617, 100%, 70%)",
-    "textColor": "white",
-    "radius": 80,
-    "font": "Arial"
-  }
-],
-        bg: "argyle1.png"
-      },
-      blank: {
-        ideas: [],
-        bg: "blank1.png"
-      },
-     lakers: {
-  ideas: [
-    {
-      title: "🏀 Lakers",
-      description: "Playoff Push",
-      x: 1604.1220264398876,
-      y: 774.6661552027556,
-      vx: -2.9307834264879746,
-      vy: -1.3209971258748892,
-      color: "purple",
-      textColor: "yellow",
-      radius: 85,
-      font: "Arial"
-    },
-    {
-      title: "Shaq 34",
-      description: "",
-      x: 1143.661675666017,
-      y: 448,
-      vx: 1.5,
-      vy: 1,
-      color: "hsl(273.35957733845265, 100%, 70%)",
-      textColor: "white",
-      radius: 100,
-      font: "Arial"
-    },
-    {
-      title: "24 8",
-      description: "",
-      x: 520.8516322910205,
-      y: 574.7903135181778,
-      vx: 1.2034961795838606,
-      vy: -1.5693732186467053,
-      color: "hsl(52.914457387256874, 100%, 70%)",
-      textColor: "black",
-      radius: 80,
-      font: "Arial"
-    }
-  ],
-  bg: "lakers1.png"
-}
-    };
-
-    function switchTheme(themeName) {
-      currentTheme = themeName;
-      backgroundIndex = 1;
-      const theme = themePresets[themeName];
-      if (!theme) return;
-      ideas = theme.ideas.map(idea => ({
-        ...idea,
-        font: idea.font || fonts[0],
-        radius: idea.radius || 80
-      }));
-
-      const img = new Image();
-      img.onload = function () {
-        backgroundImage = img;
-      };
-      img.src = `${themeName}1.png`;
-    }
-
-    function cycleBackground() {
-      backgroundIndex += 1;
-      const img = new Image();
-      img.onload = function () {
-        backgroundImage = img;
-      };
-      img.onerror = function () {
-        backgroundIndex = 1;
-        img.src = `${currentTheme}1.png`;
-      };
-      img.src = `${currentTheme}${backgroundIndex}.png`;
-    }
-    let gamepadIndex = null;
-let gamepadActive = false;
-let gamepadLoopId = null;
-
-window.addEventListener("gamepadconnected", (e) => {
-  gamepadIndex = e.gamepad.index;
-  gamepadActive = true;
-  console.log("🎮 Gamepad connected");
-  gamepadLoop();
-});
-
-window.addEventListener("gamepaddisconnected", () => {
-  gamepadActive = false;
-  console.log("❌ Gamepad disconnected");
-  cancelAnimationFrame(gamepadLoopId);
-});
-
-function gamepadLoop() {
-  const gp = navigator.getGamepads()[gamepadIndex];
-  if (!gp) return;
-
-  // Select next idea with Button A (index 0)
-  if (gp.buttons[0].pressed && ideas.length > 0) {
-    const currentIndex = selectedIdea ? ideas.indexOf(selectedIdea) : -1;
-    const nextIndex = (currentIndex + 1) % ideas.length;
-    selectedIdea = ideas[nextIndex];
-    showPanel();
-  }
-
-  // Move selected idea with left stick (axes 0 and 1)
-  if (selectedIdea && panel.style.display === "none") {
-    const dx = gp.axes[0]; // X-axis
-    const dy = gp.axes[1]; // Y-axis
-    const speed = 5;
-    selectedIdea.x += dx * speed;
-    selectedIdea.y += dy * speed;
-  }
-
-  gamepadLoopId = requestAnimationFrame(gamepadLoop);
-}
-
-
-
-let recordedStates = { start: [], end: [] };
-let isPlaying = false;
-let isFrozen = false;
-let playbackT = 0;
-
-function deepCopyIdeas() {
-  return ideas.map(i => ({ ...i }));
-}
-
-function recordState(type) {
-  recordedStates[type] = deepCopyIdeas();
-  console.log(`State '${type}' recorded.`);
-  if (type === 'start') isFrozen = true;
-}
-
-function lerp(a, b, t) {
-  return a + (b - a) * t;
-}
-
-function applyPlayback(t) {
-  if (!recordedStates.start.length || !recordedStates.end.length) return;
-
-  let start = recordedStates.start;
-  let end = recordedStates.end;
-
-  ideas = start.map((s, i) => {
-    const e = end[i] || s;
-    return {
-      ...s,
-      x: lerp(s.x, e.x, t),
-      y: lerp(s.y, e.y, t),
-      radius: lerp(s.radius, e.radius, t),
-      color: s.color,
-      textColor: s.textColor,
-      font: s.font,
-      title: s.title,
-      description: s.description,
-    };
-  });
-}
-
-function startPlayback() {
-  if (!recordedStates.start.length || !recordedStates.end.length) return;
-  const duration = parseInt(document.getElementById('playbackDuration').value) || 10000;
-  const startTime = performance.now();
-  isPlaying = true;
-
-  function stepPlayback(now) {
-    let t = Math.min((now - startTime) / duration, 1);
-    playbackT = t;
-    applyPlayback(t);
-    document.getElementById('playbackSlider').value = t;
-    if (t < 1 && isPlaying) {
-      requestAnimationFrame(stepPlayback);
-    } else {
-      isPlaying = false;
-    }
-  }
-
-  requestAnimationFrame(stepPlayback);
-}
-
-document.getElementById('playbackSlider').addEventListener('input', (e) => {
-  isPlaying = false;
-  const t = parseFloat(e.target.value);
-  playbackT = t;
-  applyPlayback(t);
-});
-
-
-function togglePlaybackToolbar() {
-  const toolbar = document.getElementById('bottomToolbar');
-  toolbar.classList.toggle("visible");
-}
-</script>
-<div id="bottomToolbar" style="
-  position: fixed; bottom: 0; width: 100%; background: #111; color: white;
-  display: flex; justify-content: center; align-items: center; padding: 10px; z-index: 1000; display: none;">
-<button onclick="recordState('start')">📌 Mark Start</button>
-<button onclick="recordState('end')">📍 Mark End</button>
-<button onclick="startPlayback()">▶️ Play</button>
-<input id="playbackSlider" max="1" min="0" step="0.01" style="margin-left: 10px; width: 200px;" type="range" value="0"/>
-<select id="playbackDuration" style="margin-left: 10px;">
-<option value="5000">5s</option>
-<option selected="" value="10000">10s</option>
-<option value="15000">15s</option>
-<option value="20000">20s</option>
-<option value="30000">30s</option>
-</select>
-<button onclick="captureCanvas()">📷 Snapshot</button>
-</div>
-<script>
-const imageInput = document.getElementById('bubbleImage');
-const styleSelect = document.getElementById('styleSelect');
-
-function applyToBubble(bubble) {
-  const style = styleSelect.value;
-  bubble.className = 'bubble';
-  if (style) bubble.classList.add(style);
-
-  imageInput.onchange = e => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        let img = bubble.querySelector('img');
-        if (!img) {
-          img = document.createElement('img');
-          bubble.appendChild(img);
+        function cycleBackground() {
+            backgroundIndex += 1;
+            const img = new Image();
+            img.onload = function () {
+                backgroundImage = img;
+            };
+            img.onerror = function () {
+                backgroundIndex = 1;
+                img.src = `${currentTheme}1.png`;
+            };
+            img.src = `${currentTheme}${backgroundIndex}.png`;
         }
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-}
-</script>
+
+        // Playback system
+        let recordedStates = { start: [], end: [] };
+        let isPlaying = false;
+        let playbackT = 0;
+
+        function deepCopyIdeas() {
+            return ideas.map(i => ({ ...i, image: null })); // Don't copy images for playback
+        }
+
+        function recordState(type) {
+            recordedStates[type] = deepCopyIdeas();
+            console.log(`State '${type}' recorded.`);
+        }
+
+        function lerp(a, b, t) {
+            return a + (b - a) * t;
+        }
+
+        function applyPlayback(t) {
+            if (!recordedStates.start.length || !recordedStates.end.length) return;
+
+            let start = recordedStates.start;
+            let end = recordedStates.end;
+
+            ideas = start.map((s, i) => {
+                const e = end[i] || s;
+                return {
+                    ...s,
+                    x: lerp(s.x, e.x, t),
+                    y: lerp(s.y, e.y, t),
+                    radius: lerp(s.radius, e.radius, t)
+                };
+            });
+        }
+
+        function startPlayback() {
+            if (!recordedStates.start.length || !recordedStates.end.length) return;
+            const duration = parseInt(document.getElementById('playbackDuration').value) || 10000;
+            const startTime = performance.now();
+            isPlaying = true;
+
+            function stepPlayback(now) {
+                let t = Math.min((now - startTime) / duration, 1);
+                playbackT = t;
+                applyPlayback(t);
+                document.getElementById('playbackSlider').value = t;
+                if (t < 1 && isPlaying) {
+                    requestAnimationFrame(stepPlayback);
+                } else {
+                    isPlaying = false;
+                }
+            }
+            requestAnimationFrame(stepPlayback);
+        }
+
+        function togglePlaybackToolbar() {
+            const toolbar = document.getElementById('bottomToolbar');
+            toolbar.classList.toggle("visible");
+        }
+
+        function captureCanvas() {
+            const link = document.createElement('a');
+            link.download = 'canvas-snapshot.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        document.getElementById('playbackSlider').addEventListener('input', (e) => {
+            isPlaying = false;
+            const t = parseFloat(e.target.value);
+            playbackT = t;
+            applyPlayback(t);
+        });
+
+        // Initial ideas data
+        ideas = [
+            {
+                "title": "🪦 Tavistock Barrett Scott TP",
+                "description": "The most ambitious concept",
+                "x": 706.1734609726234,
+                "y": 184.85199372103693,
+                "vx": -1.2968878587819401,
+                "vy": 0.5634143789037496,
+                "color": "hsl(288.68169853859274, 100%, 70%)",
+                "textColor": "red",
+                "font": "Impact",
+                "radius": 80
+            },
+            {
+                "title": "GMC",
+                "description": "Avatar morning show",
+                "x": 1231.9742566166797,
+                "y": 433.0235345126275,
+                "vx": 1.0116757948596804,
+                "vy": 1.4047083045416318,
+                "color": "hsl(221.79839347288612, 100%, 70%)",
+                "textColor": "white",
+                "font": "Tahoma",
+                "radius": 80
+            }
+        ];
+
+        // Start the animation
+        draw();
+    </script>
 </body>
 </html>
